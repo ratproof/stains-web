@@ -1,5 +1,5 @@
 export const BOT_NAME = "stains";
-export const INVITE_URL = "https://discord.com/oauth2/authorize?client_id=1544231023603224576";
+export const INVITE_URL = "https://discord.com/oauth2/authorize?client_id=1571608833565004047";
 export const SUPPORT_URL = "https://discord.gg/longest";
 export const CONTACT_EMAIL = "contact@stains.rocks";
 export const DEFAULT_PREFIX = ",";
