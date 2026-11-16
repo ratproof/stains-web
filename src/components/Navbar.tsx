@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import CardNav from "./CardNav";
 import type { CardNavItem } from "./CardNav";
 import { BOT_NAME, INVITE_URL, SUPPORT_URL } from "@/config";
+import { DiscordIcon } from "./ui/Icons";
 
 const items: CardNavItem[] = [
   {
@@ -89,6 +90,14 @@ export default function Navbar() {
         logoHref="/"
         items={items}
         cta={{ label: "Invite", href: INVITE_URL }}
+        iconLinks={[
+          {
+            label: "Support server",
+            href: SUPPORT_URL,
+            external: true,
+            icon: <DiscordIcon />,
+          },
+        ]}
         cardEffect="rise"
         openOn="click"
         linkComponent={NavLink}
