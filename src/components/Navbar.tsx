@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import CardNav from "./CardNav";
 import type { CardNavItem } from "./CardNav";
 import { BOT_NAME, INVITE_URL, SUPPORT_URL } from "@/config";
-import { CommandsIcon, Headphones } from "./ui/Icons";
+import { CommandsIcon } from "./ui/Icons";
 
 const items: CardNavItem[] = [
   {
@@ -95,12 +95,6 @@ export default function Navbar() {
             label: "Commands",
             href: "/commands",
             icon: <CommandsIcon />,
-          },
-          {
-            label: "Support server",
-            href: SUPPORT_URL,
-            external: true,
-            icon: <Headphones />,
           },
         ]}
         cardEffect="rise"
