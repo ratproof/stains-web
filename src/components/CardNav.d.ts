@@ -7,6 +7,15 @@ export interface CardNavLink {
   onClick?: (event: MouseEvent) => void;
 }
 
+export interface CardNavIconLink {
+  label: string;
+  href: string;
+  icon: ReactNode;
+  ariaLabel?: string;
+  /** Opens in a new tab with rel="noopener noreferrer". */
+  external?: boolean;
+}
+
 export interface CardNavItem {
   label: string;
   description?: string;
@@ -27,6 +36,8 @@ export interface CardNavProps {
   logoHref?: string;
   items?: CardNavItem[];
   cta?: { label: string; href?: string; onClick?: (event: MouseEvent) => void };
+  /** Icon links shown in the collapsed bar, left of the CTA. Hidden on narrow screens. */
+  iconLinks?: CardNavIconLink[];
   theme?: 'dark' | 'light';
   surface?: 'glass' | 'solid';
   openOn?: 'click' | 'hover';
