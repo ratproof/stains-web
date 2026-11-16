@@ -22,11 +22,11 @@ export const voicemaster: BentoProps = {
   ],
 };
 export const giveaways: BentoProps = {
-  icon: Gift, title: <>Giveaways with <G>Real Requirements</G></>, group: "giveaways", grid: "md:grid-cols-5",
+  icon: Gift, title: <>Giveaways with <G>Real Requirements</G></>, group: "giveaways", grid: "md:grid-cols-12",
   subtitle: "Reward the people who are actually active in your server.",
   cards: [
-    { title: "Requirements", desc: "Require a role, message count, voice minutes or a seat in voice.", shot: "giveaway-requirements", cls: "md:col-span-2" },
-    { title: "Management", desc: "Reroll, edit or end a giveaway at any time.", shot: "giveaway-manage", cls: "md:col-span-1" },
-    { title: "Live Giveaway", desc: "Entries and time left show on the embed as people join.", shot: "giveaway-embed", cls: "md:col-span-2" },
+    { title: "Requirements", desc: "Require a role, message count, voice minutes or a seat in voice.", shot: "giveaway-requirements", cls: "md:col-span-5" },
+    { title: "Management", desc: "Reroll, edit or end a giveaway at any time.", shot: "giveaway-manage", cls: "md:col-span-3" },
+    { title: "Live Giveaway", desc: "Entries and time left show on the embed as people join.", shot: "giveaway-embed", cls: "md:col-span-4" },
   ],
 };
