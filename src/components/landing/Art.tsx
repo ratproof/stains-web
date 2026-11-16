@@ -8,6 +8,7 @@ import {
 const chip = "flex min-w-[8.75rem] items-center gap-2.5 whitespace-nowrap rounded-xl border border-white/10 bg-[#17171d] py-2 pl-2 pr-4 text-[13px] font-medium shadow-[0_6px_18px_rgba(0,0,0,.45)]";
 const panel = "mx-auto w-full max-w-sm rounded-2xl border border-white/10 bg-[#15151a] p-4";
 const hi = "text-accent-soft";
+const gPanel = `${panel} flex h-72 flex-col shadow-[0_10px_40px_rgba(0,0,0,.45)]`;
 const ok = "text-emerald-400", bad = "text-red-400";
 
 // Small tinted tile that holds the icon inside a chip
@@ -28,7 +29,6 @@ function Diagram({ center: Center, nodes }: { center: IconType; nodes: Node[] })
         <g fill="none" stroke="#fff" strokeOpacity=".3" strokeDasharray="3 5" strokeLinecap="round">
           {nodes.map((n) => <path key={n.label} d={`M200 120H${n.x}V${n.y}`} />)}
         </g>
-        {nodes.map((n) => <circle key={n.label} cx={n.x} cy="120" r="3" fill="#6aa0ff" />)}
       </svg>
       <span className="icon-circle absolute -translate-x-1/2 -translate-y-1/2 shadow-[0_0_44px_rgba(106,160,255,.28)]" style={{ left: "50%", top: "50%" }}><Center className="h-8 w-8 text-accent-soft" /></span>
       {nodes.map(({ x, y, label, Icon, tone }) => (
@@ -73,17 +73,40 @@ export const SetupArt = () => <Diagram center={Terminal} nodes={[
   { x: 75, y: 55, label: "Category", Icon: Folder }, { x: 325, y: 55, label: "Join to Create", Icon: Volume2 }, { x: 200, y: 200, label: "Control Panel", Icon: LayoutGrid }]} />;
 export const PermissionsArt = () => <Diagram center={Mic} nodes={[
   { x: 80, y: 55, label: "@friend", Icon: Check, tone: ok }, { x: 325, y: 55, label: "@troll", Icon: X, tone: bad }, { x: 200, y: 200, label: "@guest", Icon: Check, tone: ok }]} />;
-export const RequirementsArt = () => <Diagram center={Gift} nodes={[
-  { x: 75, y: 50, label: "Role", Icon: BadgeCheck }, { x: 325, y: 50, label: "500 Messages", Icon: MessageSquare },
-  { x: 75, y: 190, label: "60 Voice Min", Icon: Clock }, { x: 325, y: 190, label: "In Voice", Icon: Headphones }]} />;
+function PanelHead({ title, sub }: { title: string; sub: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="icon-tile !h-10 !w-10"><Gift className="h-5 w-5 text-accent-soft" /></span>
+      <div className="min-w-0"><div className="truncate text-sm font-semibold">{title}</div><div className="truncate text-xs text-muted">{sub}</div></div>
+    </div>
+  );
+}
 
+const reqs: [string, string, IconType][] = [["Has role", "@Member", BadgeCheck], ["Messages", "500+", MessageSquare], ["Voice time", "60 min", Clock], ["In voice", "Required", Headphones]];
+export const RequirementsArt = () => (
+  <div className={`${gPanel} max-w-md`}>
+    <PanelHead title="Entry requirements" sub="Members must meet all of these" />
+    <div className="mt-4 flex flex-1 flex-col gap-2">
+      {reqs.map(([l, v, I]) => (
+        <div key={l} className="flex flex-1 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3">
+          <Tile Icon={I} />
+          <span className="flex-1 text-[13px] font-medium">{l}</span>
+          <span className="text-xs text-muted">{v}</span>
+          <span className="grid h-5 w-5 place-items-center rounded-md bg-emerald-400/10"><Check className="h-3.5 w-3.5 text-emerald-400" /></span>
+        </div>))}
+    </div>
+  </div>
+);
+
+const acts: [string, IconType, boolean][] = [["Reroll", RefreshCw, false], ["Edit", Pencil, false], ["End", Flag, true]];
 export const ManageArt = () => (
-  <div className="relative flex flex-col items-center">
-    <div className="absolute bottom-6 top-8 left-1/2 border-l border-dotted border-white/30" aria-hidden />
-    <span className="icon-circle relative z-10 shadow-[0_0_44px_rgba(106,160,255,.28)]"><Gift className="h-8 w-8 text-accent-soft" /></span>
-    <div className="relative z-10 mt-8 flex flex-col items-center gap-3">
-      {([["Reroll", RefreshCw], ["Edit", Pencil], ["End", Flag]] as [string, IconType][]).map(([l, I]) => (
-        <span key={l} className={`${chip} w-36`}><Tile Icon={I} />{l}</span>))}
+  <div className={gPanel}>
+    <PanelHead title="Nitro Giveaway" sub="Manage" />
+    <div className="mt-4 flex flex-1 flex-col gap-2">
+      {acts.map(([l, I, danger]) => (
+        <div key={l} className={`flex flex-1 items-center gap-3 rounded-xl border px-3 text-[13px] font-medium ${danger ? "border-red-400/20 bg-red-400/[0.06]" : "border-white/10 bg-white/[0.03]"}`}>
+          <Tile Icon={I} tone={danger ? bad : hi} />{l}
+        </div>))}
     </div>
   </div>
 );
@@ -114,7 +137,7 @@ export function LiveGiveawayArt() {
   useEffect(() => { const t = setInterval(() => setS((v) => (v > 0 ? v - 1 : 0)), 1000); return () => clearInterval(t); }, []);
   const parts: [string, number][] = [["Hours", Math.floor(s / 3600)], ["Min", Math.floor((s % 3600) / 60)], ["Sec", s % 60]];
   return (
-    <div className={`${panel} shadow-[0_10px_40px_rgba(0,0,0,.45)]`}>
+    <div className={gPanel}>
       <div className="flex items-center gap-3">
         <span className="icon-tile !h-11 !w-11"><Gift className="h-6 w-6 text-accent-soft" /></span>
         <div className="min-w-0 flex-1"><div className="font-semibold">Nitro Giveaway</div><div className="text-xs text-muted">Hosted by @you</div></div>
@@ -131,7 +154,7 @@ export function LiveGiveawayArt() {
       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
         <div className="h-full rounded-full bg-[#6aa0ff] transition-[width] duration-1000 ease-linear" style={{ width: `${(s / total) * 100}%` }} />
       </div>
-      <div className="mt-4 flex items-center justify-between">
+      <div className="mt-auto flex items-center justify-between">
         <span className="flex items-center gap-2 text-xs text-muted"><Avatars />128 entries</span>
         <span className="rounded-lg bg-[#6aa0ff] px-5 py-2 text-xs font-semibold text-[#0a1426]">Enter</span>
       </div>
