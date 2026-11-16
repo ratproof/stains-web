@@ -5,7 +5,7 @@ import {
   type IconType,
 } from "../ui/Icons";
 
-const chip = "flex items-center gap-2 whitespace-nowrap rounded-lg border border-white/10 bg-[#15151a] py-1.5 pl-1.5 pr-3 text-sm shadow-[0_4px_14px_rgba(0,0,0,.35)]";
+const chip = "flex min-w-[8.75rem] items-center gap-2.5 whitespace-nowrap rounded-xl border border-white/10 bg-[#17171d] py-2 pl-2 pr-4 text-[13px] font-medium shadow-[0_6px_18px_rgba(0,0,0,.45)]";
 const panel = "mx-auto w-full max-w-sm rounded-2xl border border-white/10 bg-[#15151a] p-4";
 const hi = "text-accent-soft";
 const ok = "text-emerald-400", bad = "text-red-400";
@@ -13,8 +13,8 @@ const ok = "text-emerald-400", bad = "text-red-400";
 // Small tinted tile that holds the icon inside a chip
 function Tile({ Icon, tone = hi }: { Icon: IconType; tone?: string }) {
   return (
-    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-white/[0.07]">
-      <Icon className={`h-4 w-4 ${tone}`} />
+    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-gradient-to-b from-white/[0.12] to-white/[0.04]">
+      <Icon className={`h-[18px] w-[18px] ${tone}`} />
     </span>
   );
 }
@@ -24,10 +24,13 @@ interface Node { x: number; y: number; label: string; Icon: IconType; tone?: str
 function Diagram({ center: Center, nodes }: { center: IconType; nodes: Node[] }) {
   return (
     <div className="relative mx-auto aspect-[5/3] w-full max-w-md">
-      <svg viewBox="0 0 400 240" className="absolute inset-0 h-full w-full" fill="none" stroke="#fff" strokeOpacity=".18" strokeDasharray="2 4" aria-hidden>
-        {nodes.map((n) => <path key={n.label} d={`M200 120H${n.x}V${n.y}`} />)}
+      <svg viewBox="0 0 400 240" className="absolute inset-0 h-full w-full" aria-hidden>
+        <g fill="none" stroke="#fff" strokeOpacity=".3" strokeDasharray="3 5" strokeLinecap="round">
+          {nodes.map((n) => <path key={n.label} d={`M200 120H${n.x}V${n.y}`} />)}
+        </g>
+        {nodes.map((n) => <circle key={n.label} cx={n.x} cy="120" r="3" fill="#6aa0ff" />)}
       </svg>
-      <span className="icon-circle absolute -translate-x-1/2 -translate-y-1/2" style={{ left: "50%", top: "50%" }}><Center className="h-7 w-7 text-accent-soft" /></span>
+      <span className="icon-circle absolute -translate-x-1/2 -translate-y-1/2 shadow-[0_0_44px_rgba(106,160,255,.28)]" style={{ left: "50%", top: "50%" }}><Center className="h-8 w-8 text-accent-soft" /></span>
       {nodes.map(({ x, y, label, Icon, tone }) => (
         <span key={label} className={`${chip} absolute -translate-x-1/2 -translate-y-1/2`} style={{ left: `${x / 4}%`, top: `${y / 2.4}%` }}>
           <Tile Icon={Icon} tone={tone} />{label}
@@ -75,12 +78,12 @@ export const RequirementsArt = () => <Diagram center={Gift} nodes={[
   { x: 75, y: 190, label: "60 Voice Min", Icon: Clock }, { x: 325, y: 190, label: "In Voice", Icon: Headphones }]} />;
 
 export const ManageArt = () => (
-  <div className="flex flex-col items-center">
-    <span className="icon-circle"><Gift className="h-7 w-7 text-accent-soft" /></span>
-    <div className="h-6 border-l border-dotted border-white/25" />
-    <div className="flex flex-col items-center gap-3">
+  <div className="relative flex flex-col items-center">
+    <div className="absolute bottom-6 top-8 left-1/2 border-l border-dotted border-white/30" aria-hidden />
+    <span className="icon-circle relative z-10 shadow-[0_0_44px_rgba(106,160,255,.28)]"><Gift className="h-8 w-8 text-accent-soft" /></span>
+    <div className="relative z-10 mt-8 flex flex-col items-center gap-3">
       {([["Reroll", RefreshCw], ["Edit", Pencil], ["End", Flag]] as [string, IconType][]).map(([l, I]) => (
-        <span key={l} className={chip}><Tile Icon={I} />{l}</span>))}
+        <span key={l} className={`${chip} w-36`}><Tile Icon={I} />{l}</span>))}
     </div>
   </div>
 );
@@ -106,20 +109,32 @@ export const PanelArt = () => (
 );
 
 export function LiveGiveawayArt() {
+  const total = 6 * 3600;
   const [s, setS] = useState(2 * 3600 + 14 * 60 + 9);
   useEffect(() => { const t = setInterval(() => setS((v) => (v > 0 ? v - 1 : 0)), 1000); return () => clearInterval(t); }, []);
   const parts: [string, number][] = [["Hours", Math.floor(s / 3600)], ["Min", Math.floor((s % 3600) / 60)], ["Sec", s % 60]];
   return (
-    <div className={panel}>
-      <div className="flex items-center gap-3"><span className="icon-tile !h-10 !w-10"><Gift className="h-5 w-5 text-accent-soft" /></span>
-        <div><div className="font-semibold">Nitro Giveaway</div><div className="text-xs text-muted">Hosted by @you</div></div></div>
+    <div className={`${panel} shadow-[0_10px_40px_rgba(0,0,0,.45)]`}>
+      <div className="flex items-center gap-3">
+        <span className="icon-tile !h-11 !w-11"><Gift className="h-6 w-6 text-accent-soft" /></span>
+        <div className="min-w-0 flex-1"><div className="font-semibold">Nitro Giveaway</div><div className="text-xs text-muted">Hosted by @you</div></div>
+        <span className="flex items-center gap-1.5 rounded-md bg-emerald-400/10 px-2 py-1 text-[11px] font-medium text-emerald-400">
+          <i className="h-1.5 w-1.5 rounded-full bg-emerald-400" />Live
+        </span>
+      </div>
       <div className="mt-4 grid grid-cols-3 gap-2">
         {parts.map(([l, n]) => (
-          <div key={l} className="rounded-xl border border-white/10 bg-white/[0.03] py-2 text-center">
-            <div className="font-mono text-2xl">{String(n).padStart(2, "0")}</div><div className="text-[11px] text-muted">{l}</div></div>))}
+          <div key={l} className="rounded-xl border border-white/10 bg-white/[0.03] py-2.5 text-center">
+            <div className="font-mono text-2xl font-semibold tabular-nums">{String(n).padStart(2, "0")}</div>
+            <div className="text-[11px] uppercase tracking-wide text-muted">{l}</div></div>))}
       </div>
-      <div className="mt-4 flex items-center justify-between"><span className="flex items-center gap-2 text-xs text-muted"><Avatars />128 entries</span>
-        <span className="bg-grad rounded-lg px-4 py-1.5 text-xs">Enter</span></div>
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div className="h-full rounded-full bg-[#6aa0ff] transition-[width] duration-1000 ease-linear" style={{ width: `${(s / total) * 100}%` }} />
+      </div>
+      <div className="mt-4 flex items-center justify-between">
+        <span className="flex items-center gap-2 text-xs text-muted"><Avatars />128 entries</span>
+        <span className="rounded-lg bg-[#6aa0ff] px-5 py-2 text-xs font-semibold text-[#0a1426]">Enter</span>
+      </div>
     </div>
   );
 }
