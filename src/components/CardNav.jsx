@@ -135,6 +135,7 @@ const CardNav = ({
   logoHref = '#',
   items = DEFAULT_ITEMS,
   cta,
+  iconLinks = [],
   theme = 'dark',
   surface = 'glass',
   openOn = 'hover',
@@ -531,7 +532,24 @@ const CardNav = ({
 
               {logoNode}
 
-              {cta && !narrow && ctaButton(cta, false)}
+              {!narrow && (cta || iconLinks.length > 0) && (
+                <div className={ACTIONS}>
+                  {iconLinks.map((link, index) => (
+                    <LinkComponent
+                      key={`${link.label}-${index}`}
+                      href={link.href}
+                      className={ICON}
+                      aria-label={link.ariaLabel ?? link.label}
+                      title={link.label}
+                      target={link.external ? '_blank' : undefined}
+                      rel={link.external ? 'noopener noreferrer' : undefined}
+                    >
+                      {link.icon}
+                    </LinkComponent>
+                  ))}
+                  {cta && ctaButton(cta, false)}
+                </div>
+              )}
             </>
           )}
         </div>
