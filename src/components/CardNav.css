@@ -219,7 +219,8 @@
 .card-nav__actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  justify-self: end;
   margin-left: auto;
 }
 
