@@ -3,7 +3,7 @@ import {
   AtSign, BadgeCheck, BookOpen, Check, Clock, Crown, EyeOff, Folder, Gamepad2, Gift, Headphones, LayoutGrid, Link2, Lock, Mail,
   MessageSquare, Mic, MousePointerClick, Music, Palette, Pencil, RefreshCw, Flag, Terminal, TriangleAlert, Unlock, UserCheck, UserPlus, Users, UserX, Volume2, X,
   type IconType,
-} from "./icons";
+} from "../ui/Icons";
 
 const chip = "flex items-center gap-2 whitespace-nowrap rounded-lg border border-white/10 bg-[#15151a] py-1.5 pl-1.5 pr-3 text-sm shadow-[0_4px_14px_rgba(0,0,0,.35)]";
 const panel = "mx-auto w-full max-w-sm rounded-2xl border border-white/10 bg-[#15151a] p-4";
