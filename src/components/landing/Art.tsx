@@ -2,48 +2,61 @@ import { useEffect, useState, type ReactNode } from "react";
 import {
   AtSign, BadgeCheck, BookOpen, Check, Clock, Crown, EyeOff, Folder, Gamepad2, Gift, Headphones, LayoutGrid, Link2, Lock, Mail,
   MessageSquare, Mic, MousePointerClick, Music, Palette, Pencil, RefreshCw, Flag, Terminal, TriangleAlert, Unlock, UserCheck, UserPlus, Users, UserX, Volume2, X,
-  type LucideIcon,
-} from "lucide-react";
+  type IconType,
+} from "./icons";
 
-const chip = "flex items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-[#15151a] px-3 py-1.5 text-sm";
+const chip = "flex items-center gap-2 whitespace-nowrap rounded-lg border border-white/10 bg-[#15151a] py-1.5 pl-1.5 pr-3 text-sm shadow-[0_4px_14px_rgba(0,0,0,.35)]";
 const panel = "mx-auto w-full max-w-sm rounded-2xl border border-white/10 bg-[#15151a] p-4";
-const hi = "h-3.5 w-3.5 text-accent-soft";
+const hi = "text-accent-soft";
+const ok = "text-emerald-400", bad = "text-red-400";
 
-interface Node { x: number; y: number; label: string; Icon: LucideIcon; tone?: string }
+// Small tinted tile that holds the icon inside a chip
+function Tile({ Icon, tone = hi }: { Icon: IconType; tone?: string }) {
+  return (
+    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-white/[0.07]">
+      <Icon className={`h-4 w-4 ${tone}`} />
+    </span>
+  );
+}
+
+interface Node { x: number; y: number; label: string; Icon: IconType; tone?: string }
 // Center icon with dotted elbow lines to chips. Coordinates are in a 400x240 box.
-function Diagram({ center: Center, nodes }: { center: LucideIcon; nodes: Node[] }) {
+function Diagram({ center: Center, nodes }: { center: IconType; nodes: Node[] }) {
   return (
     <div className="relative mx-auto aspect-[5/3] w-full max-w-md">
       <svg viewBox="0 0 400 240" className="absolute inset-0 h-full w-full" fill="none" stroke="#fff" strokeOpacity=".18" strokeDasharray="2 4" aria-hidden>
         {nodes.map((n) => <path key={n.label} d={`M200 120H${n.x}V${n.y}`} />)}
       </svg>
-      <span className="icon-circle absolute -translate-x-1/2 -translate-y-1/2" style={{ left: "50%", top: "50%" }}><Center className="h-7 w-7 text-accent-soft" aria-hidden /></span>
+      <span className="icon-circle absolute -translate-x-1/2 -translate-y-1/2" style={{ left: "50%", top: "50%" }}><Center className="h-7 w-7 text-accent-soft" /></span>
       {nodes.map(({ x, y, label, Icon, tone }) => (
         <span key={label} className={`${chip} absolute -translate-x-1/2 -translate-y-1/2`} style={{ left: `${x / 4}%`, top: `${y / 2.4}%` }}>
-          <Icon className={tone ?? hi} aria-hidden />{label}
+          <Tile Icon={Icon} tone={tone} />{label}
         </span>
       ))}
     </div>
   );
 }
-const ok = "h-3.5 w-3.5 text-emerald-400", bad = "h-3.5 w-3.5 text-red-400";
+
+const Chip = ({ Icon, label, className = "", style }: { Icon: IconType; label: string; className?: string; style?: React.CSSProperties }) => (
+  <span className={`${chip} absolute ${className}`} style={style}><Tile Icon={Icon} />{label}</span>
+);
 
 export const FilterDiagram = () => (
   <div className="relative mx-auto aspect-[5/3] w-full max-w-md">
     <svg viewBox="0 0 400 240" className="absolute inset-0 h-full w-full" fill="none" stroke="#fff" strokeOpacity=".16" strokeDasharray="2 4" aria-hidden>
       <path d="M200 0V240M120 100H200M300 52V105H200M100 195H150V105M250 195V125H200" />
     </svg>
-    <span className={`${chip} absolute`} style={{ left: "14%", top: "34%" }}><Link2 className={hi} aria-hidden />Links</span>
-    <span className={`${chip} absolute`} style={{ right: "4%", top: "14%" }}><AtSign className={hi} aria-hidden />Mass Mentions</span>
-    <span className={`${chip} absolute`} style={{ left: "4%", top: "76%" }}><TriangleAlert className={hi} aria-hidden />Spoilers</span>
-    <span className={`${chip} absolute`} style={{ left: "52%", top: "78%" }}><Mail className={hi} aria-hidden />Invites</span>
+    <Chip Icon={Link2} label="Links" style={{ left: "14%", top: "34%" }} />
+    <Chip Icon={AtSign} label="Mass Mentions" style={{ right: "4%", top: "14%" }} />
+    <Chip Icon={TriangleAlert} label="Spoilers" style={{ left: "4%", top: "76%" }} />
+    <Chip Icon={Mail} label="Invites" style={{ left: "52%", top: "78%" }} />
   </div>
 );
 export const ShieldArt = () => (
   <svg viewBox="0 0 260 220" className="mx-auto h-56" aria-hidden>
     <defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#cfe0ff" /><stop offset="1" stopColor="#14306b" /></linearGradient></defs>
     <path d="M20 40H240M20 190H240M60 8V212M200 8V212" stroke="#fff" strokeOpacity=".16" strokeDasharray="2 4" fill="none" />
-    <path d="M130 22 192 44V112C192 150 164 176 130 190 96 176 68 150 68 112V44Z" fill="url(#sg)" stroke="#10203f" strokeWidth="8" />
+    <path d="M130 22 192 44V112C192 150 164 176 130 190 96 176 68 150 68 112V44Z" fill="url(#sg)" stroke="#10203f" strokeWidth="8" strokeLinejoin="round" />
     <circle cx="130" cy="96" r="14" fill="none" stroke="#0a1426" strokeWidth="6" />
     <path d="M130 110V152M130 130H144M130 146H142" stroke="#0a1426" strokeWidth="6" strokeLinecap="round" fill="none" />
   </svg>
@@ -63,26 +76,26 @@ export const RequirementsArt = () => <Diagram center={Gift} nodes={[
 
 export const ManageArt = () => (
   <div className="flex flex-col items-center">
-    <span className="icon-circle"><Gift className="h-7 w-7 text-accent-soft" aria-hidden /></span>
+    <span className="icon-circle"><Gift className="h-7 w-7 text-accent-soft" /></span>
     <div className="h-6 border-l border-dotted border-white/25" />
     <div className="flex flex-col items-center gap-3">
-      {([["Reroll", RefreshCw], ["Edit", Pencil], ["End", Flag]] as [string, LucideIcon][]).map(([l, I]) => (
-        <span key={l} className={chip}><I className={hi} aria-hidden />{l}</span>))}
+      {([["Reroll", RefreshCw], ["Edit", Pencil], ["End", Flag]] as [string, IconType][]).map(([l, I]) => (
+        <span key={l} className={chip}><Tile Icon={I} />{l}</span>))}
     </div>
   </div>
 );
 
-const tiles: [string, LucideIcon][] = [["Lock", Lock], ["Unlock", Unlock], ["Limit", Users], ["Rename", Pencil], ["Claim", Crown], ["Permit", UserCheck], ["Reject", UserX], ["Hide", EyeOff]];
+const tiles: [string, IconType][] = [["Lock", Lock], ["Unlock", Unlock], ["Limit", Users], ["Rename", Pencil], ["Claim", Crown], ["Permit", UserCheck], ["Reject", UserX], ["Hide", EyeOff]];
 const Avatars = () => <span className="flex -space-x-2" aria-hidden>{["#6aa0ff", "#14306b", "#a9c8ff"].map((c) => <i key={c} className="h-6 w-6 rounded-full border-2 border-[#15151a]" style={{ background: c }} />)}</span>;
 export const PanelArt = () => (
   <div className={panel}>
     <div className="flex items-center justify-between">
-      <span className="flex items-center gap-2 text-sm font-medium"><Mic className={hi} aria-hidden />Quiet Room</span><Avatars />
+      <span className="flex items-center gap-2 text-sm font-medium"><Tile Icon={Mic} />Quiet Room</span><Avatars />
     </div>
     <div className="mt-4 grid grid-cols-4 gap-2">
       {tiles.map(([l, I]) => (
         <div key={l} className="flex flex-col items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] py-3 text-[11px] text-muted">
-          <I className="h-5 w-5 text-accent-soft" aria-hidden />{l}</div>))}
+          <I className="h-5 w-5 text-accent-soft" />{l}</div>))}
     </div>
     <div className="mt-4 space-y-2 border-t border-white/10 pt-3 text-xs text-muted">
       <div className="flex justify-between"><span>Owner</span><span className="text-fg">@you</span></div>
@@ -98,7 +111,7 @@ export function LiveGiveawayArt() {
   const parts: [string, number][] = [["Hours", Math.floor(s / 3600)], ["Min", Math.floor((s % 3600) / 60)], ["Sec", s % 60]];
   return (
     <div className={panel}>
-      <div className="flex items-center gap-3"><span className="icon-tile !h-10 !w-10"><Gift className="h-5 w-5 text-accent-soft" aria-hidden /></span>
+      <div className="flex items-center gap-3"><span className="icon-tile !h-10 !w-10"><Gift className="h-5 w-5 text-accent-soft" /></span>
         <div><div className="font-semibold">Nitro Giveaway</div><div className="text-xs text-muted">Hosted by @you</div></div></div>
       <div className="mt-4 grid grid-cols-3 gap-2">
         {parts.map(([l, n]) => (
