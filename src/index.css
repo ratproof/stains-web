@@ -6,17 +6,28 @@
 @custom-variant dark (&:is(.dark *));
 @theme {
   --font-sans: "Instrument Sans", system-ui, sans-serif;
-  --color-bg: #0d1119; --color-surface-1: #131923; --color-surface-2: #1a2230;
+  --color-bg: #000; --color-surface-1: #0d0d10; --color-surface-2: #16161a;
   --color-line: rgb(255 255 255 / 0.07); --color-fg: #f4f4f5; --color-text-muted: #a1a8b5;
   --color-brand: #4a577f; --color-accent-soft: #aab2cc; --color-accent-deep: #232a40;
 }
-:root { color-scheme: dark; --background: #0d1119; --foreground: #f4f4f5; --card: oklch(1 0 0); --card-foreground: oklch(0.145 0 0); --popover: oklch(1 0 0); --popover-foreground: oklch(0.145 0 0); --primary: oklch(0.205 0 0); --primary-foreground: oklch(0.985 0 0); --secondary: oklch(0.97 0 0); --secondary-foreground: oklch(0.205 0 0); --muted: oklch(0.97 0 0); --muted-foreground: oklch(0.556 0 0); --accent: #4a577f; --accent-foreground: #f4f4f5; --destructive: oklch(0.577 0.245 27.325); --border: oklch(0.922 0 0); --input: oklch(0.922 0 0); --ring: oklch(0.708 0 0); --chart-1: oklch(0.87 0 0); --chart-2: oklch(0.556 0 0); --chart-3: oklch(0.439 0 0); --chart-4: oklch(0.371 0 0); --chart-5: oklch(0.269 0 0); --radius: 0.625rem; --sidebar: oklch(0.985 0 0); --sidebar-foreground: oklch(0.145 0 0); --sidebar-primary: oklch(0.205 0 0); --sidebar-primary-foreground: oklch(0.985 0 0); --sidebar-accent: oklch(0.97 0 0); --sidebar-accent-foreground: oklch(0.205 0 0); --sidebar-border: oklch(0.922 0 0); --sidebar-ring: oklch(0.708 0 0); }
+:root { color-scheme: dark; --background: #000; --foreground: #f4f4f5; --card: oklch(1 0 0); --card-foreground: oklch(0.145 0 0); --popover: oklch(1 0 0); --popover-foreground: oklch(0.145 0 0); --primary: oklch(0.205 0 0); --primary-foreground: oklch(0.985 0 0); --secondary: oklch(0.97 0 0); --secondary-foreground: oklch(0.205 0 0); --muted: oklch(0.97 0 0); --muted-foreground: oklch(0.556 0 0); --accent: #4a577f; --accent-foreground: #f4f4f5; --destructive: oklch(0.577 0.245 27.325); --border: oklch(0.922 0 0); --input: oklch(0.922 0 0); --ring: oklch(0.708 0 0); --chart-1: oklch(0.87 0 0); --chart-2: oklch(0.556 0 0); --chart-3: oklch(0.439 0 0); --chart-4: oklch(0.371 0 0); --chart-5: oklch(0.269 0 0); --radius: 0.625rem; --sidebar: oklch(0.985 0 0); --sidebar-foreground: oklch(0.145 0 0); --sidebar-primary: oklch(0.205 0 0); --sidebar-primary-foreground: oklch(0.985 0 0); --sidebar-accent: oklch(0.97 0 0); --sidebar-accent-foreground: oklch(0.205 0 0); --sidebar-border: oklch(0.922 0 0); --sidebar-ring: oklch(0.708 0 0); }
 html { scrollbar-width: none; }
 html::-webkit-scrollbar { display: none; }
-body { background: radial-gradient(ellipse at 50% 40%, rgb(50 62 96 / 0.2) 0%, rgb(22 32 52 / 0.2) 38%, transparent 70%), #0d1119; color: var(--color-fg); font-family: var(--font-sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
-body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .7; background-size: 520px 520px;
-  background-image: radial-gradient(1.5px 1.5px at 12% 18%, #fff7, transparent), radial-gradient(1px 1px at 78% 8%, #fff6, transparent), radial-gradient(1.5px 1.5px at 44% 62%, #fff6, transparent),
-  radial-gradient(1px 1px at 90% 70%, #fff7, transparent), radial-gradient(1px 1px at 25% 85%, #fff6, transparent), radial-gradient(1.5px 1.5px at 60% 35%, #fff5, transparent); }
+body { background: #000; color: var(--color-fg); font-family: var(--font-sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+body.home { background: radial-gradient(ellipse at 50% 40%, rgb(50 62 96 / 0.2) 0%, rgb(22 32 52 / 0.2) 38%, transparent 70%), #0d1119; }
+
+/* twinkling stars: 3 layers, different star positions and timing so they fade in and out out of sync */
+html::before, body::before, body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .2; animation: twinkle 4s ease-in-out infinite; }
+html::before { background-size: 520px 520px; animation-duration: 3.6s;
+  background-image: radial-gradient(1.5px 1.5px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 78% 8%, #fff, transparent), radial-gradient(1.5px 1.5px at 44% 62%, #fff, transparent),
+  radial-gradient(1px 1px at 90% 70%, #fff, transparent), radial-gradient(1px 1px at 25% 85%, #fff, transparent), radial-gradient(1.5px 1.5px at 60% 35%, #fff, transparent); }
+body::before { background-size: 440px 440px; animation-duration: 5.2s; animation-delay: -1.7s;
+  background-image: radial-gradient(1px 1px at 8% 52%, #fff, transparent), radial-gradient(1.5px 1.5px at 33% 12%, #fff, transparent), radial-gradient(1px 1px at 67% 78%, #fff, transparent),
+  radial-gradient(1.5px 1.5px at 85% 30%, #fff, transparent), radial-gradient(1px 1px at 52% 92%, #fff, transparent), radial-gradient(1px 1px at 18% 74%, #fff, transparent); }
+body::after { background-size: 610px 610px; animation-duration: 7s; animation-delay: -3.4s;
+  background-image: radial-gradient(1.5px 1.5px at 20% 40%, #fff, transparent), radial-gradient(1px 1px at 72% 22%, #fff, transparent), radial-gradient(1px 1px at 48% 80%, #fff, transparent),
+  radial-gradient(1.5px 1.5px at 92% 88%, #fff, transparent), radial-gradient(1px 1px at 6% 8%, #fff, transparent), radial-gradient(1px 1px at 62% 55%, #fff, transparent); }
+@keyframes twinkle { 0%, 100% { opacity: .08; } 50% { opacity: .95; } }
 @layer base {
   h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; }
   h2 { font-size: clamp(2.25rem, 4vw, 2.75rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; }
@@ -106,7 +117,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-even
 }
 
 .dark {
-  --background: #0d1119;
+  --background: #000;
   --foreground: #f4f4f5;
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
