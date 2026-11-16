@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense } from "react";
 import Hero from "@/components/landing/Hero";
 import { moderation, voicemaster, giveaways } from "@/components/landing/bentoConfig";
 
@@ -18,12 +18,6 @@ const glows: ["l" | "r", number, string, string][] = [
 ];
 
 export default function Home() {
-  // turns on the dark blue background (body.home) only while the landing page is mounted
-  useEffect(() => {
-    document.body.classList.add("home");
-    return () => document.body.classList.remove("home");
-  }, []);
-
   return (
     <main className="relative isolate overflow-hidden">
       <div aria-hidden className="absolute inset-0 -z-10">
