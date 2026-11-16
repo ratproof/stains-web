@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import Hero from "@/components/landing/Hero";
+import WaveDivider from "@/components/WaveDivider";
 import { moderation, voicemaster, giveaways } from "@/components/landing/bentoConfig";
 
 const SocialProof = lazy(() => import("@/components/landing/SocialProof"));
@@ -27,6 +28,7 @@ export default function Home() {
         <div className="grain" />
       </div>
       <Hero />
+      <WaveDivider />
       <Suspense fallback={<div className="min-h-screen" />}>
         <SocialProof />
         <Servers />
