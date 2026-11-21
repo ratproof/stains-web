@@ -130,7 +130,6 @@ export function MorphingScrollNavbar({
               return isHash || isExternal ? (
                 <a
                   aria-label={link.label}
-                  title={compact ? link.label : undefined}
                   aria-current={active ? "location" : undefined}
                   href={link.href}
                   key={link.href}
@@ -139,12 +138,12 @@ export function MorphingScrollNavbar({
                   {content}
                 </a>
               ) : (
-                <Link aria-label={link.label} title={compact ? link.label : undefined} aria-current={active ? "page" : undefined} to={link.href} key={link.href}>{content}</Link>
+                <Link aria-label={link.label} aria-current={active ? "page" : undefined} to={link.href} key={link.href}>{content}</Link>
               )
             })}
           </div>
           <div className="msn-actions">
-            <a href={inviteUrl} target="_blank" rel="noreferrer" aria-label="Invite" title={compact ? "Invite" : undefined}>
+            <a href={inviteUrl} target="_blank" rel="noreferrer" aria-label="Invite">
               <InviteIcon />
               <span className="msn-label">Invite</span>
             </a>
@@ -175,6 +174,7 @@ const STYLES = `
 .msn-nav.is-compact .msn-label{max-width:0;margin-left:0;opacity:0}
 .msn-nav.is-compact .msn-links a,.msn-nav.is-compact .msn-actions a{padding:0 10px}
 .msn-nav.is-compact .msn-actions:before{display:block}
+@media(min-width:901px){.msn-nav.is-compact .msn-links a:hover .msn-label,.msn-nav.is-compact .msn-links a:focus-visible .msn-label,.msn-nav.is-compact .msn-actions a:hover .msn-label,.msn-nav.is-compact .msn-actions a:focus-visible .msn-label{max-width:120px;margin-left:8px;opacity:1}.msn-nav.is-compact .msn-links a:hover,.msn-nav.is-compact .msn-links a:focus-visible,.msn-nav.is-compact .msn-actions a:hover,.msn-nav.is-compact .msn-actions a:focus-visible{padding:0 14px 0 12px}}
 @media(max-width:900px){.msn-shell,.msn-nav.is-floating .msn-shell{justify-content:flex-start}.msn-label{display:none}.msn-links{margin-left:auto;gap:2px}.msn-links a,.msn-actions a{padding:0 10px}.msn-actions:before{display:block}.msn-nav.is-floating .msn-shell{max-width:680px}.msn-nav.is-compact .msn-shell{max-width:470px}}
 @media(max-width:560px){.msn-nav{padding:0 12px}.msn-shell,.msn-nav.is-floating .msn-shell,.msn-nav.is-compact .msn-shell{gap:8px;height:60px;padding:0 8px 0 10px}.msn-nav.is-floating .msn-shell,.msn-nav.is-compact .msn-shell{height:52px}.msn-brand,.msn-nav.is-compact .msn-brand{font-size:21px}.msn-links a,.msn-actions a,.msn-nav.is-compact .msn-links a,.msn-nav.is-compact .msn-actions a{padding:0 8px}.msn-actions:before{margin:0 4px}}
 @media(prefers-reduced-motion:reduce){.msn-nav *,.msn-shell{transition-duration:.01ms!important}}
