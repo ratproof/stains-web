@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { BOT_NAME, INVITE_URL } from "@/config"
+import { BOT_NAME, INVITE_URL, SUPPORT_URL } from "@/config"
 
 export type ScrollNavLink = { label: string; href: string; icon?: ReactNode }
 
@@ -54,7 +54,7 @@ const DEFAULT_LINKS: ScrollNavLink[] = [
   { label: "Commands", href: "/commands", icon: <CommandsIcon /> },
   { label: "Embeds", href: "/embeds", icon: <EmbedsIcon /> },
   { label: "Status", href: "/status", icon: <StatusIcon /> },
-  { label: "Support", href: "https://discord.gg/longest", icon: <SupportIcon /> },
+  { label: "Support", href: SUPPORT_URL, icon: <SupportIcon /> },
 ]
 
 export function MorphingScrollNavbar({
@@ -119,6 +119,7 @@ export function MorphingScrollNavbar({
           <div className="msn-links">
             {links.map((link) => {
               const isHash = link.href.startsWith("#")
+              const isExternal = /^https?:\/\//.test(link.href)
               const active = isHash ? activeHref === link.href : pathname === link.href
               const content = (
                 <>
@@ -126,8 +127,17 @@ export function MorphingScrollNavbar({
                   <span className="msn-label">{link.label}</span>
                 </>
               )
-              return isHash ? (
-                <a aria-label={link.label} title={compact ? link.label : undefined} aria-current={active ? "location" : undefined} href={link.href} key={link.href}>{content}</a>
+              return isHash || isExternal ? (
+                <a
+                  aria-label={link.label}
+                  title={compact ? link.label : undefined}
+                  aria-current={active ? "location" : undefined}
+                  href={link.href}
+                  key={link.href}
+                  {...(isExternal ? { target: "_blank", rel: "noreferrer" } : {})}
+                >
+                  {content}
+                </a>
               ) : (
                 <Link aria-label={link.label} title={compact ? link.label : undefined} aria-current={active ? "page" : undefined} to={link.href} key={link.href}>{content}</Link>
               )
@@ -146,23 +156,26 @@ export function MorphingScrollNavbar({
 }
 
 const STYLES = `
-.msn-nav{--paper:#121413;--ink:#edf1ee;--muted:#9aa49e;position:fixed;z-index:100;top:0;right:0;left:0;display:flex;justify-content:center;padding:0 20px;pointer-events:none;font-family:"Geist Variable",ui-sans-serif,system-ui,sans-serif;color:var(--ink)}
+.msn-nav{--paper:#121413;--ink:#edf1ee;--muted:#aab3ae;position:fixed;z-index:100;top:0;right:0;left:0;display:flex;justify-content:center;padding:0 20px;pointer-events:none;font-family:"Geist Variable",ui-sans-serif,system-ui,sans-serif;color:var(--ink)}
 .msn-nav *{box-sizing:border-box}.msn-nav a{color:inherit;text-decoration:none}
-.msn-shell{pointer-events:auto;display:flex;align-items:center;justify-content:space-between;gap:22px;width:100%;max-width:1180px;height:68px;margin-top:0;padding:0 22px;border:1px solid transparent;border-radius:20px;background:transparent;transition:max-width .5s cubic-bezier(.34,1.32,.5,1),height .38s cubic-bezier(.34,1.2,.5,1),margin-top .38s ease,padding .38s ease,background-color .3s ease,border-color .3s ease}
-.msn-nav.is-floating .msn-shell{max-width:960px;height:58px;margin-top:12px;padding:0 20px;border-color:color-mix(in srgb,var(--ink) 10%,transparent);background:color-mix(in srgb,var(--paper) 35%,transparent);-webkit-backdrop-filter:saturate(160%) blur(20px);backdrop-filter:saturate(160%) blur(20px)}
-.msn-nav.is-compact .msn-shell{max-width:560px;height:52px}
+.msn-shell{pointer-events:auto;display:flex;align-items:center;justify-content:space-between;gap:22px;width:100%;max-width:1180px;height:68px;margin-top:0;padding:0 16px 0 22px;border:1px solid transparent;border-radius:20px;background:transparent;transition:max-width .5s cubic-bezier(.34,1.32,.5,1),height .38s cubic-bezier(.34,1.2,.5,1),margin-top .38s ease,padding .38s ease,background-color .3s ease,border-color .3s ease}
+.msn-nav.is-floating .msn-shell{max-width:960px;height:58px;margin-top:12px;padding:0 10px 0 20px;border-color:color-mix(in srgb,var(--ink) 10%,transparent);background:color-mix(in srgb,var(--paper) 35%,transparent);-webkit-backdrop-filter:saturate(160%) blur(20px);backdrop-filter:saturate(160%) blur(20px)}
+.msn-nav.is-compact .msn-shell{max-width:470px;height:52px}
 .msn-brand{display:inline-flex;align-items:center;gap:10px;flex:none;font-size:25px;font-weight:800;line-height:1;letter-spacing:-.045em;transition:font-size .38s cubic-bezier(.34,1.2,.5,1)}
 .msn-brand img{border-radius:50%}.msn-nav.is-compact .msn-brand{font-size:22px}
-.msn-links{display:flex;gap:26px;transition:gap .4s ease}
-.msn-label{display:inline-block;max-width:120px;margin-left:7px;overflow:hidden;opacity:1;transition:max-width .4s cubic-bezier(.34,1.2,.5,1),margin-left .4s ease,opacity .25s ease}
-.msn-nav.is-compact .msn-label{max-width:0;margin-left:0;opacity:0}.msn-nav.is-compact .msn-links{gap:22px}
-.msn-links a,.msn-actions a{position:relative;display:inline-flex;align-items:center;color:var(--muted);font-size:14px;font-weight:700;white-space:nowrap;transition:color .15s ease}
-.msn-links a svg,.msn-actions a svg{width:16px;height:16px;flex:none}
-.msn-links a:after,.msn-actions a:after{content:"";position:absolute;right:0;bottom:-5px;left:0;height:2px;border-radius:2px;background:var(--ink);transform:scaleX(0);transform-origin:0 50%;transition:transform .28s cubic-bezier(.2,.7,.2,1)}
-.msn-links a:hover,.msn-actions a:hover,.msn-links a[aria-current]{color:var(--ink)}
-.msn-links a:hover:after,.msn-actions a:hover:after,.msn-links a[aria-current]:after{transform:scaleX(1)}
+.msn-links{display:flex;gap:4px}
 .msn-actions{display:flex;flex:none;align-items:center}
-@media(max-width:900px){.msn-label{display:none}.msn-links{gap:20px}.msn-nav.is-floating .msn-shell{max-width:680px}.msn-nav.is-compact .msn-shell{max-width:520px}}
-@media(max-width:560px){.msn-links{gap:14px}.msn-nav{padding:0 12px}.msn-shell,.msn-nav.is-floating .msn-shell,.msn-nav.is-compact .msn-shell{gap:12px;height:60px;padding:0 10px}.msn-nav.is-floating .msn-shell,.msn-nav.is-compact .msn-shell{height:52px}.msn-brand,.msn-nav.is-compact .msn-brand{font-size:23px}}
+.msn-actions:before{content:"";display:none;width:1px;height:20px;margin:0 6px;background:color-mix(in srgb,var(--ink) 14%,transparent)}
+.msn-links a,.msn-actions a{display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 12px;border-radius:10px;color:var(--muted);font-size:14px;font-weight:700;white-space:nowrap;transition:color .15s ease,background-color .15s ease,padding .38s ease}
+.msn-links a svg,.msn-actions a svg{width:19px;height:19px;flex:none}
+.msn-links a:hover,.msn-actions a:hover,.msn-links a[aria-current]{color:var(--ink);background:color-mix(in srgb,var(--ink) 9%,transparent)}
+.msn-label{display:inline-block;max-width:120px;margin-left:8px;overflow:hidden;opacity:1;transition:max-width .4s cubic-bezier(.34,1.2,.5,1),margin-left .4s ease,opacity .25s ease}
+.msn-nav.is-compact .msn-shell{justify-content:flex-start}
+.msn-nav.is-compact .msn-links{margin-left:auto;gap:2px}
+.msn-nav.is-compact .msn-label{max-width:0;margin-left:0;opacity:0}
+.msn-nav.is-compact .msn-links a,.msn-nav.is-compact .msn-actions a{padding:0 10px}
+.msn-nav.is-compact .msn-actions:before{display:block}
+@media(max-width:900px){.msn-shell,.msn-nav.is-floating .msn-shell{justify-content:flex-start}.msn-label{display:none}.msn-links{margin-left:auto;gap:2px}.msn-links a,.msn-actions a{padding:0 10px}.msn-actions:before{display:block}.msn-nav.is-floating .msn-shell{max-width:680px}.msn-nav.is-compact .msn-shell{max-width:470px}}
+@media(max-width:560px){.msn-nav{padding:0 12px}.msn-shell,.msn-nav.is-floating .msn-shell,.msn-nav.is-compact .msn-shell{gap:8px;height:60px;padding:0 8px 0 10px}.msn-nav.is-floating .msn-shell,.msn-nav.is-compact .msn-shell{height:52px}.msn-brand,.msn-nav.is-compact .msn-brand{font-size:21px}.msn-links a,.msn-actions a,.msn-nav.is-compact .msn-links a,.msn-nav.is-compact .msn-actions a{padding:0 8px}.msn-actions:before{margin:0 4px}}
 @media(prefers-reduced-motion:reduce){.msn-nav *,.msn-shell{transition-duration:.01ms!important}}
 `
