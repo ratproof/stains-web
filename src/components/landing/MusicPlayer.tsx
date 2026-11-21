@@ -13,7 +13,7 @@ type Track = {
 };
 
 const TRACKS: Track[] = [
-  { title: "Run Away", artist: "d4vd", src: "/music/run-away.mp3", cover: "/music/covers/run-away.jpg" },
+  { title: "#getdrained #101", artist: "*67", src: "/music/getdrained.mp3", cover: "/music/covers/run-away.jpg" },
   { title: "introvert", artist: "Brakence", src: "/music/introvert.mp3", cover: "/music/covers/introvert.jpg" },
   { title: "PRETTY PRIVILEGE", artist: "Quadeca", src: "/music/pretty-privilege.mp3", cover: "/music/covers/pretty-privilege.jpg" },
   { title: "cant get out (fromthe...)", artist: "lieu", src: "/music/cant-get-out.mp3", cover: "/music/covers/cant-get-out.jpg" },
