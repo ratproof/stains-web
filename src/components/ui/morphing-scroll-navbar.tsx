@@ -54,7 +54,7 @@ const DEFAULT_LINKS: ScrollNavLink[] = [
   { label: "Commands", href: "/commands", icon: <CommandsIcon /> },
   { label: "Embeds", href: "/embeds", icon: <EmbedsIcon /> },
   { label: "Status", href: "/status", icon: <StatusIcon /> },
-  { label: "Support", href: "/support", icon: <SupportIcon /> },
+  { label: "Support", href: "https://discord.gg/longest", icon: <SupportIcon /> },
 ]
 
 export function MorphingScrollNavbar({
