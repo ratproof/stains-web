@@ -174,7 +174,7 @@ export default function MusicPlayer() {
           </p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[1fr_220px]">
+        <div className="grid gap-8 lg:grid-cols-[1fr_200px] lg:gap-12">
           {/* player card */}
           <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#0b0b0d]">
             <audio
@@ -188,7 +188,7 @@ export default function MusicPlayer() {
 
             <div className="grid md:grid-cols-[1fr_340px]">
               {/* now playing */}
-              <div className="flex flex-col p-6 sm:p-8">
+              <div className="flex flex-col p-6 sm:p-8 lg:p-10">
                 <div className="mb-4 text-right font-mono text-xs tracking-widest text-white/40">
                   {String(index + 1).padStart(2, "0")} / {String(TRACKS.length).padStart(2, "0")}
                 </div>
@@ -197,7 +197,7 @@ export default function MusicPlayer() {
                   <img
                     src={track.cover}
                     alt={`${track.title} cover`}
-                    className="h-32 w-32 shrink-0 rounded-2xl border border-white/10 bg-white/5 object-cover sm:h-44 sm:w-44"
+                    className="h-32 w-32 shrink-0 rounded-2xl border border-white/10 bg-white/5 object-cover sm:h-44 sm:w-44 lg:h-56 lg:w-56"
                   />
                   <div className="min-w-0">
                     <div className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/50">
@@ -213,7 +213,7 @@ export default function MusicPlayer() {
                 <div className="mt-10">
                   <div
                     onClick={seek}
-                    className="flex h-10 w-full cursor-pointer items-center gap-[3px]"
+                    className="flex h-10 w-full cursor-pointer items-center gap-[3px] lg:h-14"
                     role="slider"
                     aria-label="Seek"
                     aria-valuemin={0}
@@ -322,7 +322,7 @@ export default function MusicPlayer() {
           {/* platforms */}
           <ul className="hidden grid-cols-1 content-center gap-6 lg:grid">
             {PLATFORMS.map((p) => (
-              <li key={p.name} className="flex items-center justify-between gap-4">
+              <li key={p.name} className="flex items-center gap-4">
                 <svg viewBox="0 0 24 24" fill={p.color} className="h-7 w-7 shrink-0" aria-hidden="true">
                   <path d={p.path} />
                 </svg>
