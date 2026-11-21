@@ -17,7 +17,7 @@ const TRACKS: Track[] = [
   { title: "FATHER (feat. Travis Scott)", artist: "Kanye West", src: "/music/FATHER.mp3", cover: "/music/covers/FATHER.jpg" },
   { title: "RAGING WOLF", artist: "Sematary", src: "/music/RAGING.mp3", cover: "/music/covers/RAGING.jpg" },
   { title: "classified", artist: "selectkill", src: "/music/classified.mp3", cover: "/music/covers/classified.jpg" },
-  //{ title: "Contraband", artist: "Colato, xaviersobased", src: "/music/contraband.mp3", cover: "/music/covers/contraband.jpg" },
+  { title: "its easier to talk to uu in my head, i like that version of you more instead", artist: "wifiskeleton", src: "/music/easier.mp3", cover: "/music/covers/easier.jpg" },
   //{ title: "stick (feat. kmoe)", artist: "quannnic, kmoe", src: "/music/stick.mp3", cover: "/music/covers/stick.jpg" },
 ];
 
