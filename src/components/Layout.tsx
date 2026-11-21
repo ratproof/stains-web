@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import Navbar from "./Navbar";
+import { MorphingScrollNavbar } from "@/components/ui/morphing-scroll-navbar";
 import Footer from "./Footer";
 import { BOT_NAME } from "@/config";
 
@@ -19,5 +19,5 @@ export default function Layout() {
   useEffect(() => {
     document.title = TITLES[pathname] ?? "Not Found";
   }, [pathname]);
-  return (<><Navbar /><Outlet /><Footer /></>);
+  return (<><MorphingScrollNavbar /><Outlet /><Footer /></>);
 }
