@@ -15,8 +15,8 @@ type Track = {
 const TRACKS: Track[] = [
   { title: "#getdrained #101", artist: "*67", src: "/music/getdrained.mp3", cover: "/music/covers/getdrained.jpg" },
   { title: "FATHER (feat. Travis Scott)", artist: "Kanye West", src: "/music/FATHER.mp3", cover: "/music/covers/FATHER.jpg" },
-  { title: "PRETTY PRIVILEGE", artist: "Quadeca", src: "/music/pretty-privilege.mp3", cover: "/music/covers/pretty-privilege.jpg" },
-  { title: "cant get out (fromthe...)", artist: "lieu", src: "/music/cant-get-out.mp3", cover: "/music/covers/cant-get-out.jpg" },
+  { title: "RAGING WOLF", artist: "Sematary", src: "/music/RAGING.mp3", cover: "/music/covers/RAGING.jpg" },
+  { title: "classified", artist: "selectkill", src: "/music/classified.mp3", cover: "/music/covers/classified.jpg" },
   { title: "Contraband", artist: "Colato, xaviersobased", src: "/music/contraband.mp3", cover: "/music/covers/contraband.jpg" },
   { title: "stick (feat. kmoe)", artist: "quannnic, kmoe", src: "/music/stick.mp3", cover: "/music/covers/stick.jpg" },
 ];
