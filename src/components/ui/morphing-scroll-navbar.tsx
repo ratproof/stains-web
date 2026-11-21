@@ -123,20 +123,20 @@ export function MorphingScrollNavbar({
               const content = (
                 <>
                   {link.icon}
-                  {link.label}
+                  <span className="msn-label">{link.label}</span>
                 </>
               )
               return isHash ? (
-                <a aria-current={active ? "location" : undefined} href={link.href} key={link.href}>{content}</a>
+                <a aria-label={link.label} title={compact ? link.label : undefined} aria-current={active ? "location" : undefined} href={link.href} key={link.href}>{content}</a>
               ) : (
-                <Link aria-current={active ? "page" : undefined} to={link.href} key={link.href}>{content}</Link>
+                <Link aria-label={link.label} title={compact ? link.label : undefined} aria-current={active ? "page" : undefined} to={link.href} key={link.href}>{content}</Link>
               )
             })}
           </div>
           <div className="msn-actions">
-            <a href={inviteUrl} target="_blank" rel="noreferrer">
+            <a href={inviteUrl} target="_blank" rel="noreferrer" aria-label="Invite" title={compact ? "Invite" : undefined}>
               <InviteIcon />
-              Invite
+              <span className="msn-label">Invite</span>
             </a>
           </div>
         </div>
@@ -153,15 +153,16 @@ const STYLES = `
 .msn-nav.is-compact .msn-shell{max-width:560px;height:52px}
 .msn-brand{display:inline-flex;align-items:center;gap:10px;flex:none;font-size:25px;font-weight:800;line-height:1;letter-spacing:-.045em;transition:font-size .38s cubic-bezier(.34,1.2,.5,1)}
 .msn-brand img{border-radius:50%}.msn-nav.is-compact .msn-brand{font-size:22px}
-.msn-links{display:flex;gap:26px;max-width:640px;overflow:hidden;opacity:1;transition:max-width .45s cubic-bezier(.34,1.2,.5,1),opacity .28s ease,transform .3s ease,gap .35s ease}
-.msn-nav.is-compact .msn-links{max-width:0;gap:0;opacity:0;transform:translateY(-8px);pointer-events:none}
-.msn-links a,.msn-actions a{position:relative;display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:14px;font-weight:700;white-space:nowrap;transition:color .15s ease}
+.msn-links{display:flex;gap:26px;transition:gap .4s ease}
+.msn-label{display:inline-block;max-width:120px;margin-left:7px;overflow:hidden;opacity:1;transition:max-width .4s cubic-bezier(.34,1.2,.5,1),margin-left .4s ease,opacity .25s ease}
+.msn-nav.is-compact .msn-label{max-width:0;margin-left:0;opacity:0}.msn-nav.is-compact .msn-links{gap:22px}
+.msn-links a,.msn-actions a{position:relative;display:inline-flex;align-items:center;color:var(--muted);font-size:14px;font-weight:700;white-space:nowrap;transition:color .15s ease}
 .msn-links a svg,.msn-actions a svg{width:16px;height:16px;flex:none}
 .msn-links a:after,.msn-actions a:after{content:"";position:absolute;right:0;bottom:-5px;left:0;height:2px;border-radius:2px;background:var(--ink);transform:scaleX(0);transform-origin:0 50%;transition:transform .28s cubic-bezier(.2,.7,.2,1)}
 .msn-links a:hover,.msn-actions a:hover,.msn-links a[aria-current]{color:var(--ink)}
 .msn-links a:hover:after,.msn-actions a:hover:after,.msn-links a[aria-current]:after{transform:scaleX(1)}
 .msn-actions{display:flex;flex:none;align-items:center}
-@media(max-width:900px){.msn-links{display:none}.msn-nav.is-floating .msn-shell{max-width:680px}.msn-nav.is-compact .msn-shell{max-width:520px}}
-@media(max-width:560px){.msn-nav{padding:0 12px}.msn-shell,.msn-nav.is-floating .msn-shell,.msn-nav.is-compact .msn-shell{gap:12px;height:60px;padding:0 10px}.msn-nav.is-floating .msn-shell,.msn-nav.is-compact .msn-shell{height:52px}.msn-brand,.msn-nav.is-compact .msn-brand{font-size:23px}}
+@media(max-width:900px){.msn-label{display:none}.msn-links{gap:20px}.msn-nav.is-floating .msn-shell{max-width:680px}.msn-nav.is-compact .msn-shell{max-width:520px}}
+@media(max-width:560px){.msn-links{gap:14px}.msn-nav{padding:0 12px}.msn-shell,.msn-nav.is-floating .msn-shell,.msn-nav.is-compact .msn-shell{gap:12px;height:60px;padding:0 10px}.msn-nav.is-floating .msn-shell,.msn-nav.is-compact .msn-shell{height:52px}.msn-brand,.msn-nav.is-compact .msn-brand{font-size:23px}}
 @media(prefers-reduced-motion:reduce){.msn-nav *,.msn-shell{transition-duration:.01ms!important}}
 `
