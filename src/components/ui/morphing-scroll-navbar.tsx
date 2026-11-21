@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { BOT_NAME, INVITE_URL, SUPPORT_URL } from "@/config"
 
@@ -71,6 +71,25 @@ export function MorphingScrollNavbar({
   const [atTop, setAtTop] = useState(true)
   const [direction, setDirection] = useState<"up" | "down">("up")
   const [activeHref, setActiveHref] = useState("")
+  const [openKey, setOpenKey] = useState<string | null>(null)
+  const hoverTimer = useRef(0)
+
+  // Hover intent: only open a label once the pointer rests on an icon, so a fast
+  // sweep across the bar never starts the expand/collapse loop.
+  const hoverProps = (key: string) => ({
+    className: openKey === key ? "is-open" : undefined,
+    onPointerEnter: (e: ReactPointerEvent) => {
+      if (e.pointerType !== "mouse") return
+      window.clearTimeout(hoverTimer.current)
+      hoverTimer.current = window.setTimeout(() => setOpenKey(key), 90)
+    },
+    onPointerLeave: () => {
+      window.clearTimeout(hoverTimer.current)
+      setOpenKey(null)
+    },
+  })
+
+  useEffect(() => () => window.clearTimeout(hoverTimer.current), [])
 
   useEffect(() => {
     let lastY = window.scrollY
@@ -133,17 +152,18 @@ export function MorphingScrollNavbar({
                   aria-current={active ? "location" : undefined}
                   href={link.href}
                   key={link.href}
+                  {...hoverProps(link.href)}
                   {...(isExternal ? { target: "_blank", rel: "noreferrer" } : {})}
                 >
                   {content}
                 </a>
               ) : (
-                <Link aria-label={link.label} aria-current={active ? "page" : undefined} to={link.href} key={link.href}>{content}</Link>
+                <Link aria-label={link.label} aria-current={active ? "page" : undefined} to={link.href} key={link.href} {...hoverProps(link.href)}>{content}</Link>
               )
             })}
           </div>
           <div className="msn-actions">
-            <a href={inviteUrl} target="_blank" rel="noreferrer" aria-label="Invite">
+            <a href={inviteUrl} target="_blank" rel="noreferrer" aria-label="Invite" {...hoverProps("invite")}>
               <InviteIcon />
               <span className="msn-label">Invite</span>
             </a>
@@ -165,16 +185,16 @@ const STYLES = `
 .msn-links{display:flex;gap:4px}
 .msn-actions{display:flex;flex:none;align-items:center}
 .msn-actions:before{content:"";display:none;width:1px;height:20px;margin:0 6px;background:color-mix(in srgb,var(--ink) 14%,transparent)}
-.msn-links a,.msn-actions a{display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 12px;border-radius:10px;color:var(--muted);font-size:14px;font-weight:700;white-space:nowrap;transition:color .15s ease,background-color .15s ease,padding .38s ease}
+.msn-links a,.msn-actions a{display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 12px;border-radius:10px;color:var(--muted);font-size:14px;font-weight:700;white-space:nowrap;transition:color .15s ease,background-color .15s ease}
 .msn-links a svg,.msn-actions a svg{width:19px;height:19px;flex:none}
 .msn-links a:hover,.msn-actions a:hover,.msn-links a[aria-current]{color:var(--ink);background:color-mix(in srgb,var(--ink) 9%,transparent)}
-.msn-label{display:inline-block;max-width:120px;margin-left:8px;overflow:hidden;opacity:1;transition:max-width .4s cubic-bezier(.34,1.2,.5,1),margin-left .4s ease,opacity .25s ease}
+.msn-label{display:inline-block;max-width:120px;margin-left:8px;overflow:hidden;opacity:1;transition:max-width .24s cubic-bezier(.3,.8,.3,1),margin-left .24s ease,opacity .18s ease}
 .msn-nav.is-compact .msn-shell{justify-content:flex-start}
 .msn-nav.is-compact .msn-links{margin-left:auto;gap:2px}
 .msn-nav.is-compact .msn-label{max-width:0;margin-left:0;opacity:0}
 .msn-nav.is-compact .msn-links a,.msn-nav.is-compact .msn-actions a{padding:0 10px}
 .msn-nav.is-compact .msn-actions:before{display:block}
-@media(min-width:901px){.msn-nav.is-compact .msn-links a:hover .msn-label,.msn-nav.is-compact .msn-links a:focus-visible .msn-label,.msn-nav.is-compact .msn-actions a:hover .msn-label,.msn-nav.is-compact .msn-actions a:focus-visible .msn-label{max-width:120px;margin-left:8px;opacity:1}.msn-nav.is-compact .msn-links a:hover,.msn-nav.is-compact .msn-links a:focus-visible,.msn-nav.is-compact .msn-actions a:hover,.msn-nav.is-compact .msn-actions a:focus-visible{padding:0 14px 0 12px}}
+@media(min-width:901px){.msn-nav.is-compact a.is-open .msn-label,.msn-nav.is-compact .msn-links a:focus-visible .msn-label,.msn-nav.is-compact .msn-actions a:focus-visible .msn-label{max-width:120px;margin-left:8px;opacity:1}}
 @media(max-width:900px){.msn-shell,.msn-nav.is-floating .msn-shell{justify-content:flex-start}.msn-label{display:none}.msn-links{margin-left:auto;gap:2px}.msn-links a,.msn-actions a{padding:0 10px}.msn-actions:before{display:block}.msn-nav.is-floating .msn-shell{max-width:680px}.msn-nav.is-compact .msn-shell{max-width:470px}}
 @media(max-width:560px){.msn-nav{padding:0 12px}.msn-shell,.msn-nav.is-floating .msn-shell,.msn-nav.is-compact .msn-shell{gap:8px;height:60px;padding:0 8px 0 10px}.msn-nav.is-floating .msn-shell,.msn-nav.is-compact .msn-shell{height:52px}.msn-brand,.msn-nav.is-compact .msn-brand{font-size:21px}.msn-links a,.msn-actions a,.msn-nav.is-compact .msn-links a,.msn-nav.is-compact .msn-actions a{padding:0 8px}.msn-actions:before{margin:0 4px}}
 @media(prefers-reduced-motion:reduce){.msn-nav *,.msn-shell{transition-duration:.01ms!important}}
