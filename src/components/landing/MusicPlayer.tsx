@@ -18,7 +18,7 @@ const TRACKS: Track[] = [
   { title: "RAGING WOLF", artist: "Sematary", src: "/music/RAGING.mp3", cover: "/music/covers/RAGING.jpg" },
   { title: "classified", artist: "selectkill", src: "/music/classified.mp3", cover: "/music/covers/classified.jpg" },
   { title: "its easier to talk to uu in my head, i like that version of you more instead", artist: "wifiskeleton", src: "/music/easier.mp3", cover: "/music/covers/easier.jpg" },
-  //{ title: "stick (feat. kmoe)", artist: "quannnic, kmoe", src: "/music/stick.mp3", cover: "/music/covers/stick.jpg" },
+  { title: "drama (feat. luvbackpack)", artist: "osquinn", src: "/music/drama.mp3", cover: "/music/covers/drama.jpg" },
 ];
 
 const BARS = 90;
