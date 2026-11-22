@@ -65,6 +65,7 @@ interface ContainerState {
 const LIMITS = { fields: 25, buttons: 5 };
 const CT_LIMITS = { components: 40, gallery: 10, text: 4000, buttons: 5 };
 const V2_FLAG = 1 << 15;
+const DEFAULT_COLOR = "#0B1933";
 
 const BTN_STYLES: { id: BtnStyle; label: string; bg: string; api: number }[] = [
   { id: "primary", label: "Primary", bg: "#5865f2", api: 1 },
@@ -80,7 +81,7 @@ const EMPTY_EMBED: EmbedState = {
   title: "",
   titleUrl: "",
   description: "",
-  color: "#538CE5",
+  color: DEFAULT_COLOR,
   thumbnail: "",
   image: "",
   footerText: "",
@@ -107,7 +108,7 @@ const newBtn = (id: number, over: Partial<Btn> = {}): Btn => ({
   ...over,
 });
 
-const EMPTY_CT: ContainerState = { accent: true, color: "#538CE5", spoiler: false };
+const EMPTY_CT: ContainerState = { accent: true, color: DEFAULT_COLOR, spoiler: false };
 
 const exampleComps = (): Comp[] => [
   {
@@ -127,6 +128,36 @@ const exampleComps = (): Comp[] => [
   { id: 4, type: "buttons", btns: [newBtn(5, { label: "Verify", style: "success" })] },
 ];
 
+/* ------------------------------------------------------------------ */
+/* preview markdown                                                    */
+/* ------------------------------------------------------------------ */
+
+const utcShort = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+const utcTime = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
+
+// preview only, the bot fills in the real values
+const SAMPLE: Record<string, string> = {
+  "guild.name": "Stains HQ",
+  "guild.id": "123456789012345678",
+  "guild.count": "1,284",
+  "guild.boost_count": "14",
+  "guild.boost_tier": "2",
+  user: "mason",
+  "user.name": "mason",
+  "user.display_name": "Mason",
+  "user.id": "987654321098765432",
+  "user.mention": "@mason",
+  "user.top_role": "Member",
+  "user.join_position": "1284",
+  "user.join_position_suffix": "1284th",
+  "channel.name": "welcome",
+  "channel.mention": "#welcome",
+  "date.utc_now_short": utcShort,
+  "time.utc_now": utcTime,
+};
+
+const fillVars = (t: string) => t.replace(/\{([a-z_.]+)\}/g, (m, n: string) => SAMPLE[n] ?? m);
+
 const INLINE_RE =
   /(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|~~[^~]+~~|`[^`\n]+`|\[[^\]]+\]\(https?:\/\/[^)\s]+\))/g;
 
@@ -144,7 +175,7 @@ function renderInline(text: string, keyBase: string): ReactNode[] {
       return <s key={key}>{part.slice(2, -2)}</s>;
     if (part.startsWith("`") && part.endsWith("`") && part.length > 2)
       return (
-        <code key={key} className="rounded bg-[#1e1f22] px-1 py-px font-mono text-[0.85em]">
+        <code key={key} className="rounded bg-[#1e1f22] px-1.5 py-0.5 font-mono text-[0.85em]">
           {part.slice(1, -1)}
         </code>
       );
@@ -165,7 +196,7 @@ function renderInline(text: string, keyBase: string): ReactNode[] {
 }
 
 function Md({ text }: { text: string }) {
-  const blocks = text.split(/(```[\s\S]*?```)/g);
+  const blocks = fillVars(text).split(/(```[\s\S]*?```)/g);
   return (
     <>
       {blocks.map((block, bi) => {
@@ -174,23 +205,55 @@ function Md({ text }: { text: string }) {
           return (
             <pre
               key={bi}
-              className="my-1 overflow-x-auto rounded border border-[#1e1f22] bg-[#1e1f22] p-2 font-mono text-[0.85em] leading-snug"
+              className="my-1 overflow-x-auto rounded-md border border-[#1e1f22] bg-[#1e1f22] p-2.5 font-mono text-[0.85em] leading-snug"
             >
               {code}
             </pre>
           );
         }
+        let t = block;
+        if (bi > 0) t = t.replace(/^\n/, "");
+        if (bi < blocks.length - 1) t = t.replace(/\n$/, "");
+        if (t === "" && blocks.length > 1) return null;
         return (
           <Fragment key={bi}>
-            {block.split("\n").map((line, li, arr) => {
+            {t.split("\n").map((line, li) => {
+              const key = `${bi}-${li}`;
               const h = line.match(/^(#{1,3}) (.+)$/);
-              const size = h ? ["text-[1.5em]", "text-[1.25em]", "text-[1.1em]"][h[1].length - 1] : "";
-              const content = renderInline(h ? h[2] : line, `${bi}-${li}`);
+              if (h) {
+                const size = ["text-[1.5em] mt-1", "text-[1.25em] mt-1", "text-[1.1em]"][h[1].length - 1];
+                return (
+                  <div key={key} className={`${size} font-bold leading-tight`}>
+                    {renderInline(h[2], key)}
+                  </div>
+                );
+              }
+              const sub = line.match(/^-# (.+)$/);
+              if (sub)
+                return (
+                  <div key={key} className="text-xs text-[#949ba4]">
+                    {renderInline(sub[1], key)}
+                  </div>
+                );
+              const quote = line.match(/^> ?(.*)$/);
+              if (quote)
+                return (
+                  <div key={key} className="border-l-4 border-[#4e5058] pl-3">
+                    {renderInline(quote[1], key)}
+                  </div>
+                );
+              const item = line.match(/^\s*[-*] (.+)$/);
+              if (item)
+                return (
+                  <div key={key} className="flex gap-2 pl-3">
+                    <span className="text-[#b5bac1]">•</span>
+                    <span className="min-w-0">{renderInline(item[1], key)}</span>
+                  </div>
+                );
               return (
-                <Fragment key={li}>
-                  {h ? <div className={`${size} font-bold leading-tight`}>{content}</div> : content}
-                  {!h && li < arr.length - 1 && <br />}
-                </Fragment>
+                <div key={key} className="min-h-[1.375em]">
+                  {renderInline(line, key)}
+                </div>
               );
             })}
           </Fragment>
@@ -854,12 +917,12 @@ function PreviewBtn({ b }: { b: Btn }) {
       type="button"
       tabIndex={-1}
       style={{ backgroundColor: st.bg }}
-      className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded px-4 text-sm font-medium text-white transition-[filter] ${
+      className={`inline-flex h-8 min-w-[60px] shrink-0 items-center justify-center gap-1.5 rounded-[3px] px-4 text-sm font-medium text-white transition-[filter] ${
         b.disabled ? "cursor-not-allowed opacity-50" : "hover:brightness-90"
       }`}
     >
       {b.emoji && <span>{b.emoji}</span>}
-      {b.label}
+      {fillVars(b.label)}
       {b.style === "link" && <ExternalLink size={14} />}
     </button>
   );
@@ -1119,12 +1182,26 @@ function ContainerEditor({
   );
 }
 
+function Gallery({ urls }: { urls: string[] }) {
+  const n = urls.length;
+  return (
+    <div className={`grid gap-1 overflow-hidden rounded-lg ${n === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+      {urls.map((u, i) => {
+        const big = n === 3 && i === 0;
+        const wide = n > 3 && n % 2 === 1 && i === n - 1;
+        const size = n === 1 ? "max-h-[320px]" : big ? "row-span-2 h-full min-h-0" : "h-32";
+        return <img key={i} src={u} alt="" className={`w-full object-cover ${size} ${wide ? "col-span-2" : ""}`} />;
+      })}
+    </div>
+  );
+}
+
 function ContainerPreview({ ct, comps }: { ct: ContainerState; comps: Comp[] }) {
   const visible = comps.filter((c) => compJson(c) !== null || c.type === "separator");
-  if (visible.length === 0) return null;
+  if (visible.length === 0) return <Empty />;
   return (
     <div
-      className={`relative mt-1.5 max-w-[520px] space-y-2 overflow-hidden rounded-lg border border-[#1e1f22] bg-[#2b2d31] p-4 ${
+      className={`relative mt-2 max-w-[520px] space-y-2 overflow-hidden rounded-lg border border-[#1e1f22] bg-[#2b2d31] p-4 ${
         ct.accent ? "border-l-4" : ""
       }`}
       style={ct.accent ? { borderLeftColor: ct.color } : undefined}
@@ -1138,42 +1215,31 @@ function ContainerPreview({ ct, comps }: { ct: ContainerState; comps: Comp[] }) 
         switch (c.type) {
           case "text":
             return (
-              <div key={c.id} className="whitespace-pre-wrap break-words text-sm leading-[1.375]">
+              <div key={c.id} className="break-words text-sm leading-[1.375]">
                 <Md text={c.content} />
               </div>
             );
           case "section":
             return (
               <div key={c.id} className="flex items-center gap-4">
-                <div className="min-w-0 flex-1 whitespace-pre-wrap break-words text-sm leading-[1.375]">
+                <div className="min-w-0 flex-1 break-words text-sm leading-[1.375]">
                   <Md text={c.content} />
                 </div>
                 {c.accessory === "thumbnail" && hasUrl(c.thumb) && (
-                  <img src={c.thumb} alt="" className="h-20 w-20 shrink-0 rounded object-cover" />
+                  <img src={c.thumb} alt="" className="h-[84px] w-[84px] shrink-0 rounded-lg object-cover" />
                 )}
                 {c.accessory === "button" && btnReady(c.btn) && <PreviewBtn b={c.btn} />}
               </div>
             );
           case "separator":
             return (
-              <div key={c.id} className={c.large ? "py-2" : "py-0.5"}>
+              <div key={c.id} className={c.large ? "py-2.5" : "py-1"}>
                 {c.divider && <div className="h-px bg-white/10" />}
               </div>
             );
           case "gallery": {
             const urls = c.urls.filter(hasUrl);
-            if (!urls.length) return null;
-            return (
-              <div
-                key={c.id}
-                className="grid gap-1 overflow-hidden rounded-lg"
-                style={{ gridTemplateColumns: `repeat(${urls.length === 1 ? 1 : 2}, minmax(0, 1fr))` }}
-              >
-                {urls.map((u, i) => (
-                  <img key={i} src={u} alt="" className={`w-full object-cover ${urls.length === 1 ? "max-h-[300px]" : "h-32"}`} />
-                ))}
-              </div>
-            );
+            return urls.length ? <Gallery key={c.id} urls={urls} /> : null;
           }
           case "buttons": {
             const bs = c.btns.filter(btnReady);
@@ -1188,6 +1254,53 @@ function ContainerPreview({ ct, comps }: { ct: ContainerState; comps: Comp[] }) 
           }
         }
       })}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* discord message frame                                               */
+/* ------------------------------------------------------------------ */
+
+function Empty() {
+  return <p className="mt-1 text-sm text-[#949ba4]">Nothing to preview yet.</p>;
+}
+
+function Frame({ time, children }: { time: string; children: ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-black/40 bg-[#313338] font-[gg_sans,'Noto_Sans','Helvetica_Neue',Helvetica,Arial,sans-serif] text-[#dbdee1] shadow-xl shadow-black/30">
+      <div className="flex items-center gap-2 border-b border-black/40 px-4 py-2.5 text-[15px] font-semibold text-white">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#80848e" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <path d="M9.5 3 7.5 21M16.5 3l-2 18M4 8.5h17M3 15.5h17" />
+        </svg>
+        preview
+      </div>
+
+      <div className="px-2 py-4">
+        <div className="flex gap-4 rounded px-2 py-1 transition-colors hover:bg-[#2e3035]">
+          <img src="/favicon.png" alt="" width={40} height={40} className="mt-0.5 h-10 w-10 shrink-0 rounded-full" />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 leading-tight">
+              <span className="font-medium text-white">{BOT_NAME}</span>
+              <span
+                title="Verified App"
+                className="inline-flex items-center gap-0.5 rounded-[3px] bg-[#5865f2] px-1.5 py-px text-[10px] font-semibold uppercase leading-[15px] text-white"
+              >
+                <svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor" aria-hidden="true">
+                  <path d="M6.4 11.8 2.6 8l1.4-1.4 2.4 2.4 5.6-5.6L13.4 4.8z" />
+                </svg>
+                App
+              </span>
+              <span className="ml-0.5 text-xs text-[#949ba4]">Today at {time}</span>
+            </div>
+            {children}
+          </div>
+        </div>
+      </div>
+
+      <div className="px-4 pb-4">
+        <div className="rounded-lg bg-[#383a40] px-4 py-2.5 text-sm text-[#6d6f78]">Message #preview</div>
+      </div>
     </div>
   );
 }
@@ -1479,122 +1592,105 @@ export default function EmbedBuilder() {
         {/* ----------------------------- preview ----------------------------- */}
         <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           <Panel title="Preview">
-            {/* discord message */}
-            <div className="overflow-hidden rounded-xl bg-[#313338] p-4 font-[gg_sans,'Noto_Sans','Helvetica_Neue',Helvetica,Arial,sans-serif] text-[#dbdee1]">
-              <div className="flex gap-4">
-                <img src="/favicon.png" alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded-full" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 leading-tight">
-                    <span className="font-medium text-white">{BOT_NAME}</span>
-                    <span
-                      title="Verified App"
-                      className="inline-flex items-center gap-0.5 rounded bg-[#5865f2] px-1.5 py-px text-[10px] font-semibold uppercase leading-[15px] text-white"
+            <Frame time={time}>
+              {mode === "container" ? (
+                <ContainerPreview ct={ct} comps={comps} />
+              ) : (
+                <>
+                  {content && (
+                    <div className="mt-0.5 break-words text-[15px] leading-[1.375]">
+                      <Md text={content} />
+                    </div>
+                  )}
+
+                  {hasEmbed && (
+                    <div
+                      className="mt-2 grid max-w-[520px] rounded-[4px] border border-[#1e1f22] border-l-4 bg-[#2b2d31] pb-4 pl-3 pr-4 pt-2"
+                      style={{ borderLeftColor: e.color }}
                     >
-                      <svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor" aria-hidden="true">
-                        <path d="M6.4 11.8 2.6 8l1.4-1.4 2.4 2.4 5.6-5.6L13.4 4.8z" />
-                      </svg>
-                      App
-                    </span>
-                    <span className="text-xs text-[#949ba4]">Today at {time}</span>
-                  </div>
-
-                  {mode === "container" ? (
-                    <ContainerPreview ct={ct} comps={comps} />
-                  ) : (
-                    <>
-                      {content && (
-                        <div className="mt-0.5 whitespace-pre-wrap break-words text-[15px] leading-[1.375]">
-                          <Md text={content} />
-                        </div>
-                      )}
-
-                      {hasEmbed && (
-                        <div
-                          className="mt-1.5 grid max-w-[520px] rounded border border-[#1e1f22] border-l-4 bg-[#2b2d31] py-2 pl-3 pr-4 pb-4"
-                          style={{ borderLeftColor: e.color }}
-                        >
-                          <div className="flex gap-4">
-                            <div className="min-w-0 flex-1 space-y-2">
-                              {e.authorName && (
-                                <div className="mt-1 flex items-center gap-2">
-                                  {hasUrl(e.authorIcon) && (
-                                    <img src={e.authorIcon} alt="" className="h-6 w-6 rounded-full object-cover" />
-                                  )}
-                                  <span className="text-sm font-semibold text-white">{e.authorName}</span>
-                                </div>
+                      <div className="flex gap-4">
+                        <div className="min-w-0 flex-1 space-y-2">
+                          {e.authorName && (
+                            <div className="mt-1 flex items-center gap-2">
+                              {hasUrl(e.authorIcon) && (
+                                <img src={e.authorIcon} alt="" className="h-6 w-6 rounded-full object-cover" />
                               )}
+                              <span className="text-sm font-semibold text-white">{fillVars(e.authorName)}</span>
+                            </div>
+                          )}
 
-                              {e.title &&
-                                (hasUrl(e.titleUrl) ? (
-                                  <a href={e.titleUrl} target="_blank" rel="noreferrer noopener" className="block break-words text-base font-semibold text-[#00a8fc] hover:underline">
-                                    {e.title}
-                                  </a>
-                                ) : (
-                                  <div className="break-words text-base font-semibold text-white">{e.title}</div>
-                                ))}
+                          {e.title &&
+                            (hasUrl(e.titleUrl) ? (
+                              <a href={e.titleUrl} target="_blank" rel="noreferrer noopener" className="block break-words text-base font-semibold text-[#00a8fc] hover:underline">
+                                {fillVars(e.title)}
+                              </a>
+                            ) : (
+                              <div className="break-words text-base font-semibold text-white">{fillVars(e.title)}</div>
+                            ))}
 
-                              {e.description && (
-                                <div className="whitespace-pre-wrap break-words text-sm leading-[1.375]">
-                                  <Md text={e.description} />
-                                </div>
-                              )}
+                          {e.description && (
+                            <div className="break-words text-sm leading-[1.375]">
+                              <Md text={e.description} />
+                            </div>
+                          )}
 
-                              {rows.length > 0 && (
-                                <div className="space-y-2">
-                                  {rows.map((row, ri) => (
-                                    <div key={ri} className="grid gap-x-3 gap-y-2" style={{ gridTemplateColumns: `repeat(${row[0].inline ? 3 : 1}, minmax(0, 1fr))` }}>
-                                      {row.map((f) => (
-                                        <div key={f.id} className="min-w-0">
-                                          {f.name && <div className="break-words text-sm font-semibold text-white">{f.name}</div>}
-                                          {f.value && (
-                                            <div className="whitespace-pre-wrap break-words text-sm leading-[1.375]">
-                                              <Md text={f.value} />
-                                            </div>
-                                          )}
+                          {rows.length > 0 && (
+                            <div className="space-y-2 pt-1">
+                              {rows.map((row, ri) => (
+                                <div key={ri} className="grid gap-x-4 gap-y-2" style={{ gridTemplateColumns: `repeat(${row[0].inline ? 3 : 1}, minmax(0, 1fr))` }}>
+                                  {row.map((f) => (
+                                    <div key={f.id} className="min-w-0">
+                                      {f.name && <div className="mb-0.5 break-words text-sm font-semibold text-white">{fillVars(f.name)}</div>}
+                                      {f.value && (
+                                        <div className="break-words text-sm leading-[1.375]">
+                                          <Md text={f.value} />
                                         </div>
-                                      ))}
+                                      )}
                                     </div>
                                   ))}
                                 </div>
-                              )}
-                            </div>
-
-                            {hasUrl(e.thumbnail) && (
-                              <img src={e.thumbnail} alt="" className="mt-1 h-20 w-20 shrink-0 rounded object-cover" />
-                            )}
-                          </div>
-
-                          {hasUrl(e.image) && (
-                            <img src={e.image} alt="" className="mt-4 max-h-[300px] w-full rounded object-cover" />
-                          )}
-
-                          {(e.footerText || e.timestamp) && (
-                            <div className="mt-2 flex items-center gap-2 text-xs text-[#b5bac1]">
-                              {e.footerText && hasUrl(e.footerIcon) && (
-                                <img src={e.footerIcon} alt="" className="h-5 w-5 rounded-full object-cover" />
-                              )}
-                              <span className="font-medium">
-                                {e.footerText}
-                                {e.footerText && e.timestamp && " • "}
-                                {e.timestamp && `Today at ${time}`}
-                              </span>
+                              ))}
                             </div>
                           )}
                         </div>
+
+                        {hasUrl(e.thumbnail) && (
+                          <img src={e.thumbnail} alt="" className="mt-1 h-20 w-20 shrink-0 rounded-md object-cover" />
+                        )}
+                      </div>
+
+                      {hasUrl(e.image) && (
+                        <img src={e.image} alt="" className="mt-4 max-h-[300px] w-full rounded-md object-cover" />
                       )}
 
-                      {btns.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {btns.map((b) => (
-                            <PreviewBtn key={b.id} b={b} />
-                          ))}
+                      {(e.footerText || e.timestamp) && (
+                        <div className="mt-3 flex items-center gap-2 text-xs text-[#b5bac1]">
+                          {e.footerText && hasUrl(e.footerIcon) && (
+                            <img src={e.footerIcon} alt="" className="h-5 w-5 rounded-full object-cover" />
+                          )}
+                          <span className="font-medium">
+                            {fillVars(e.footerText)}
+                            {e.footerText && e.timestamp && " • "}
+                            {e.timestamp && `Today at ${time}`}
+                          </span>
                         </div>
                       )}
-                    </>
+                    </div>
                   )}
-                </div>
-              </div>
-            </div>
+
+                  {btns.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {btns.map((b) => (
+                        <PreviewBtn key={b.id} b={b} />
+                      ))}
+                    </div>
+                  )}
+
+                  {!content && !hasEmbed && btns.length === 0 && <Empty />}
+                </>
+              )}
+            </Frame>
+            <p className="mt-3 text-xs text-white/35">Variables show sample values here. The bot fills in the real ones.</p>
           </Panel>
 
           {/* script box */}
