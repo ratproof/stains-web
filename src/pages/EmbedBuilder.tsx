@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Trash2,
   Type,
+  X,
 } from "lucide-react";
 import { BOT_NAME } from "@/config";
 
@@ -81,7 +82,7 @@ const EMPTY_EMBED: EmbedState = {
   title: "",
   titleUrl: "",
   description: "",
-  color: DEFAULT_COLOR,
+  color: "",
   thumbnail: "",
   image: "",
   footerText: "",
@@ -136,59 +137,71 @@ const utcShort = new Date().toLocaleDateString("en-US", { month: "short", day: "
 const utcTime = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
 
 // preview only, the bot fills in the real values
+// \uE000 ... \uE001 marks a mention so the preview can draw it as a pill
 const SAMPLE: Record<string, string> = {
   "guild.name": "Stains HQ",
   "guild.id": "123456789012345678",
   "guild.count": "1,284",
   "guild.boost_count": "14",
   "guild.boost_tier": "2",
-  user: "mason",
-  "user.name": "mason",
-  "user.display_name": "Mason",
-  "user.id": "987654321098765432",
-  "user.mention": "@mason",
+  user: "ratproof",
+  "user.name": "ratproof",
+  "user.display_name": "ratproof",
+  "user.id": "244738370213773313",
+  "user.mention": "\uE000@ratproof\uE001",
   "user.top_role": "Member",
   "user.join_position": "1284",
   "user.join_position_suffix": "1284th",
   "channel.name": "welcome",
-  "channel.mention": "#welcome",
+  "channel.mention": "\uE000#welcome\uE001",
   "date.utc_now_short": utcShort,
   "time.utc_now": utcTime,
 };
 
-const fillVars = (t: string) => t.replace(/\{([a-z_.]+)\}/g, (m, n: string) => SAMPLE[n] ?? m);
+const fillRich = (t: string) => t.replace(/\{([a-z_.]+)\}/g, (m, n: string) => SAMPLE[n] ?? m);
+// plain version for places that can't show pills (titles, labels, footer...)
+const fillVars = (t: string) => fillRich(t).replace(/[\uE000\uE001]/g, "");
 
 const INLINE_RE =
-  /(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|~~[^~]+~~|`[^`\n]+`|\[[^\]]+\]\(https?:\/\/[^)\s]+\))/g;
+  /(\uE000[^\uE001]+\uE001|\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|~~[^~]+~~|`[^`\n]+`|\[[^\]]+\]\(https?:\/\/[^)\s]+\))/g;
 
 function renderInline(text: string, keyBase: string): ReactNode[] {
   return text.split(INLINE_RE).map((part, i) => {
     const key = `${keyBase}-${i}`;
     if (!part) return null;
+    if (part.startsWith("\uE000") && part.endsWith("\uE001"))
+      return (
+        <span
+          key={key}
+          className="cursor-pointer rounded-[3px] bg-[#5865f2]/30 px-0.5 font-medium text-[#c9cdfb] transition-colors hover:bg-[#5865f2] hover:text-white"
+        >
+          {part.slice(1, -1)}
+        </span>
+      );
     if (part.startsWith("***") && part.endsWith("***") && part.length > 6)
-      return <strong key={key}><em>{part.slice(3, -3)}</em></strong>;
+      return <strong key={key}><em>{renderInline(part.slice(3, -3), key)}</em></strong>;
     if (part.startsWith("**") && part.endsWith("**") && part.length > 4)
-      return <strong key={key}>{part.slice(2, -2)}</strong>;
+      return <strong key={key}>{renderInline(part.slice(2, -2), key)}</strong>;
     if (part.startsWith("__") && part.endsWith("__") && part.length > 4)
-      return <u key={key}>{part.slice(2, -2)}</u>;
+      return <u key={key}>{renderInline(part.slice(2, -2), key)}</u>;
     if (part.startsWith("~~") && part.endsWith("~~") && part.length > 4)
-      return <s key={key}>{part.slice(2, -2)}</s>;
+      return <s key={key}>{renderInline(part.slice(2, -2), key)}</s>;
     if (part.startsWith("`") && part.endsWith("`") && part.length > 2)
       return (
         <code key={key} className="rounded bg-[#1e1f22] px-1.5 py-0.5 font-mono text-[0.85em]">
-          {part.slice(1, -1)}
+          {part.slice(1, -1).replace(/[\uE000\uE001]/g, "")}
         </code>
       );
     if (
       (part.startsWith("*") && part.endsWith("*") && part.length > 2) ||
       (part.startsWith("_") && part.endsWith("_") && part.length > 2)
     )
-      return <em key={key}>{part.slice(1, -1)}</em>;
+      return <em key={key}>{renderInline(part.slice(1, -1), key)}</em>;
     const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/);
     if (link)
       return (
         <a key={key} href={link[2]} target="_blank" rel="noreferrer noopener" className="text-[#00a8fc] hover:underline">
-          {link[1]}
+          {link[1].replace(/[\uE000\uE001]/g, "")}
         </a>
       );
     return <Fragment key={key}>{part}</Fragment>;
@@ -196,12 +209,12 @@ function renderInline(text: string, keyBase: string): ReactNode[] {
 }
 
 function Md({ text }: { text: string }) {
-  const blocks = fillVars(text).split(/(```[\s\S]*?```)/g);
+  const blocks = fillRich(text).split(/(```[\s\S]*?```)/g);
   return (
     <>
       {blocks.map((block, bi) => {
         if (block.startsWith("```") && block.endsWith("```") && block.length > 6) {
-          const code = block.slice(3, -3).replace(/^[a-z]*\n/i, "");
+          const code = block.slice(3, -3).replace(/^[a-z]*\n/i, "").replace(/[\uE000\uE001]/g, "");
           return (
             <pre
               key={bi}
@@ -286,7 +299,7 @@ function toScript(content: string, e: EmbedState, fields: Field[], btns: Btn[]):
   if (e.title) p.push(`{title: ${e.title}}`);
   if (e.titleUrl && e.title) p.push(`{url: ${e.titleUrl}}`);
   if (e.description) p.push(`{description: ${e.description}}`);
-  p.push(`{color: ${e.color}}`);
+  if (e.color) p.push(`{color: ${e.color}}`);
   if (e.thumbnail) p.push(`{thumbnail: ${e.thumbnail}}`);
   if (e.image) p.push(`{image: ${e.image}}`);
   fields
@@ -311,7 +324,7 @@ function toJson(content: string, e: EmbedState, fields: Field[], btns: Btn[]): s
   if (e.title) embed.title = e.title;
   if (e.titleUrl && e.title) embed.url = e.titleUrl;
   if (e.description) embed.description = e.description;
-  embed.color = colorInt(e.color);
+  if (e.color) embed.color = colorInt(e.color);
   if (e.authorName)
     embed.author = { name: e.authorName, ...(e.authorIcon && { icon_url: e.authorIcon }) };
   if (e.thumbnail) embed.thumbnail = { url: e.thumbnail };
@@ -351,7 +364,7 @@ function toPython(content: string, e: EmbedState, fields: Field[], btns: Btn[]):
     e.title && `title=${q(e.title)}`,
     e.description && `description=${q(e.description)}`,
     e.titleUrl && e.title && `url=${q(e.titleUrl)}`,
-    `color=discord.Color(0x${(e.color.replace("#", "") || "000000").toUpperCase()})`,
+    e.color && `color=discord.Color(0x${e.color.replace("#", "").toUpperCase()})`,
   ].filter(Boolean);
   const L: string[] = [`embed = discord.Embed(${args.join(", ")})`];
   if (e.authorName)
@@ -889,23 +902,40 @@ function Segmented<T extends string>({
   );
 }
 
-function ColorField({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
+function ColorField({
+  value,
+  onChange,
+  label,
+  allowNone,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+  allowNone?: boolean;
+}) {
+  const valid = /^#[0-9a-f]{6}$/i.test(value);
   return (
     <div className="flex items-center gap-2">
       <input
         type="color"
-        value={value}
+        value={valid ? value : DEFAULT_COLOR}
         onChange={(ev) => onChange(ev.target.value)}
         aria-label={label}
-        className="h-9 w-10 cursor-pointer rounded-lg border border-white/[0.08] bg-black/25 p-1"
+        className={`h-9 w-10 cursor-pointer rounded-lg border border-white/[0.08] bg-black/25 p-1 ${value ? "" : "opacity-40"}`}
       />
       <input
         className={`${inputCls} w-24 font-mono`}
         value={value}
         maxLength={7}
+        placeholder={allowNone ? "none" : undefined}
         onChange={(ev) => onChange(ev.target.value)}
         aria-label={`${label} hex`}
       />
+      {allowNone && value && (
+        <IconBtn label="Remove color" onClick={() => onChange("")}>
+          <X size={16} />
+        </IconBtn>
+      )}
     </div>
   );
 }
@@ -1481,7 +1511,7 @@ export default function EmbedBuilder() {
                   <div className="grid gap-3 sm:grid-cols-[auto_1fr_1fr]">
                     <div>
                       <Label>Color</Label>
-                      <ColorField value={e.color} onChange={(v) => upd("color", v)} label="Embed color" />
+                      <ColorField value={e.color} onChange={(v) => upd("color", v)} label="Embed color" allowNone />
                     </div>
                     <div>
                       <Label>Thumbnail URL</Label>
@@ -1606,7 +1636,7 @@ export default function EmbedBuilder() {
                   {hasEmbed && (
                     <div
                       className="mt-2 grid max-w-[520px] rounded-[4px] border border-[#1e1f22] border-l-4 bg-[#2b2d31] pb-4 pl-3 pr-4 pt-2"
-                      style={{ borderLeftColor: e.color }}
+                      style={{ borderLeftColor: e.color || "#1e1f22" }}
                     >
                       <div className="flex gap-4">
                         <div className="min-w-0 flex-1 space-y-2">
