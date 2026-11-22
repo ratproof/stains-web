@@ -65,7 +65,7 @@ interface ContainerState {
 const LIMITS = { fields: 25, buttons: 5 };
 const CT_LIMITS = { components: 40, gallery: 10, text: 4000, buttons: 5 };
 const V2_FLAG = 1 << 15;
-const DEFAULT_COLOR = "#0B1933";
+const DEFAULT_COLOR = "#4a577f";
 
 const BTN_STYLES: { id: BtnStyle; label: string; bg: string; api: number }[] = [
   { id: "primary", label: "Primary", bg: "#5865f2", api: 1 },
