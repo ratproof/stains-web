@@ -286,6 +286,18 @@ const q = (s: string) => JSON.stringify(s);
 const colorInt = (hex: string) => parseInt(hex.replace("#", "") || "0", 16) || 0;
 const hasUrl = (s: string) => /^https?:\/\//i.test(s.trim());
 const btnReady = (b: Btn) => !!(b.label || b.emoji);
+// color alone doesn't make an embed, it needs something to show
+const hasEmbedContent = (e: EmbedState, fields: Field[]) =>
+  !!(
+    e.title ||
+    e.description ||
+    e.authorName ||
+    e.footerText ||
+    e.image ||
+    e.thumbnail ||
+    e.timestamp ||
+    fields.some((f) => f.name || f.value)
+  );
 
 /**
  * Bleed/Greed-style "script" syntax:  {embed}$v{title: ...}$v{field: name && value && inline}
@@ -294,19 +306,21 @@ const btnReady = (b: Btn) => !!(b.label || b.emoji);
 function toScript(content: string, e: EmbedState, fields: Field[], btns: Btn[]): string {
   const p: string[] = [];
   if (content.trim()) p.push(`{content: ${content}}`);
-  p.push("{embed}");
-  if (e.authorName) p.push(`{author: ${[e.authorName, e.authorIcon].filter(Boolean).join(" && ")}}`);
-  if (e.title) p.push(`{title: ${e.title}}`);
-  if (e.titleUrl && e.title) p.push(`{url: ${e.titleUrl}}`);
-  if (e.description) p.push(`{description: ${e.description}}`);
-  if (e.color) p.push(`{color: ${e.color}}`);
-  if (e.thumbnail) p.push(`{thumbnail: ${e.thumbnail}}`);
-  if (e.image) p.push(`{image: ${e.image}}`);
-  fields
-    .filter((f) => f.name || f.value)
-    .forEach((f) => p.push(`{field: ${f.name} && ${f.value} && ${f.inline ? "true" : "false"}}`));
-  if (e.footerText) p.push(`{footer: ${[e.footerText, e.footerIcon].filter(Boolean).join(" && ")}}`);
-  if (e.timestamp) p.push("{timestamp: true}");
+  if (hasEmbedContent(e, fields)) {
+    p.push("{embed}");
+    if (e.authorName) p.push(`{author: ${[e.authorName, e.authorIcon].filter(Boolean).join(" && ")}}`);
+    if (e.title) p.push(`{title: ${e.title}}`);
+    if (e.titleUrl && e.title) p.push(`{url: ${e.titleUrl}}`);
+    if (e.description) p.push(`{description: ${e.description}}`);
+    if (e.color) p.push(`{color: ${e.color}}`);
+    if (e.thumbnail) p.push(`{thumbnail: ${e.thumbnail}}`);
+    if (e.image) p.push(`{image: ${e.image}}`);
+    fields
+      .filter((f) => f.name || f.value)
+      .forEach((f) => p.push(`{field: ${f.name} && ${f.value} && ${f.inline ? "true" : "false"}}`));
+    if (e.footerText) p.push(`{footer: ${[e.footerText, e.footerIcon].filter(Boolean).join(" && ")}}`);
+    if (e.timestamp) p.push("{timestamp: true}");
+  }
   btns
     .filter((b) => b.label || b.emoji)
     .forEach((b) =>
@@ -337,7 +351,7 @@ function toJson(content: string, e: EmbedState, fields: Field[], btns: Btn[]): s
 
   const payload: Record<string, unknown> = {};
   if (content.trim()) payload.content = content;
-  payload.embeds = [embed];
+  if (hasEmbedContent(e, fields)) payload.embeds = [embed];
   const bs = btns.filter((b) => b.label || b.emoji);
   if (bs.length)
     payload.components = [
@@ -366,6 +380,7 @@ function toPython(content: string, e: EmbedState, fields: Field[], btns: Btn[]):
     e.titleUrl && e.title && `url=${q(e.titleUrl)}`,
     e.color && `color=discord.Color(0x${e.color.replace("#", "").toUpperCase()})`,
   ].filter(Boolean);
+  const embedOn = hasEmbedContent(e, fields);
   const L: string[] = [`embed = discord.Embed(${args.join(", ")})`];
   if (e.authorName)
     L.push(`embed.set_author(name=${q(e.authorName)}${e.authorIcon ? `, icon_url=${q(e.authorIcon)}` : ""})`);
@@ -380,9 +395,12 @@ function toPython(content: string, e: EmbedState, fields: Field[], btns: Btn[]):
     L.push(`embed.set_footer(text=${q(e.footerText)}${e.footerIcon ? `, icon_url=${q(e.footerIcon)}` : ""})`);
   if (e.timestamp) L.push("embed.timestamp = discord.utils.utcnow()");
 
+  if (!embedOn) L.length = 0;
+
   const bs = btns.filter((b) => b.label || b.emoji);
   if (bs.length) {
-    L.push("", "view = discord.ui.View()");
+    if (L.length) L.push("");
+    L.push("view = discord.ui.View()");
     bs.forEach((b, i) => {
       const a = [
         b.label && `label=${q(b.label)}`,
@@ -394,10 +412,11 @@ function toPython(content: string, e: EmbedState, fields: Field[], btns: Btn[]):
       L.push(`view.add_item(discord.ui.Button(${a.join(", ")}))`);
     });
   }
-  const send = [content.trim() && `content=${q(content)}`, "embed=embed", bs.length && "view=view"]
+  const send = [content.trim() && `content=${q(content)}`, embedOn && "embed=embed", bs.length && "view=view"]
     .filter(Boolean)
     .join(", ");
-  L.push("", `await ctx.send(${send})`);
+  if (L.length) L.push("");
+  L.push(`await ctx.send(${send})`);
   return L.join("\n");
 }
 
