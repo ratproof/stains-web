@@ -49,29 +49,33 @@ body::after { background-size: 610px 610px; animation-duration: 7s; animation-de
 .btn-outline { border: 1px solid rgb(255 255 255 / .14); font-weight: 500; }
 .btn-outline:hover { background: var(--color-surface-1); }
 
-/* rotating glow ring on hover for landing buttons.
+/* glow that travels around the button edge at constant speed.
    .btn gets it automatically, add .glow-btn to anything else, .no-glow to opt out */
-@property --glow-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-@keyframes glow-spin { to { --glow-angle: 360deg; } }
+@keyframes glow-travel { to { offset-distance: 100%; } }
 
 @layer components {
   .btn:not(.no-glow), .glow-btn { position: relative; }
 
   .btn:not(.no-glow)::before, .btn:not(.no-glow)::after,
   .glow-btn::before, .glow-btn::after {
-    content: ""; position: absolute; inset: -2px; padding: 2px; border-radius: inherit;
-    pointer-events: none; opacity: 0; transition: opacity .3s ease;
-    background: conic-gradient(from var(--glow-angle), transparent 0 55%, color-mix(in srgb, var(--color-accent-soft) 85%, transparent) 78%, #fff 90%, transparent 100%);
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-    animation: glow-spin 2.2s linear infinite;
+    content: ""; position: absolute; top: 0; left: 0; pointer-events: none; opacity: 0;
+    transition: opacity .3s ease;
+    offset-path: inset(0 round 9999px);
+    offset-rotate: auto;
+    offset-distance: 0%;
+    animation: glow-travel 2.4s linear infinite;
   }
-  .btn:not(.no-glow)::after, .glow-btn::after { filter: blur(8px); }
+
+  /* bright streak */
+  .btn:not(.no-glow)::before, .glow-btn::before {
+    width: 44px; height: 3px; border-radius: 9999px;
+    background: linear-gradient(90deg, transparent, #fff, transparent);
+  }
+  /* soft glow behind it */
+  .btn:not(.no-glow)::after, .glow-btn::after {
+    width: 72px; height: 16px; border-radius: 9999px; filter: blur(9px);
+    background: color-mix(in srgb, var(--color-accent-soft) 85%, transparent);
+  }
 
   .btn:not(.no-glow):hover::before, .btn:not(.no-glow):hover::after,
   .btn:not(.no-glow):focus-visible::before, .btn:not(.no-glow):focus-visible::after,
