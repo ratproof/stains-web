@@ -1,11 +1,7 @@
 import { Link } from "react-router-dom";
 import { BOT_NAME, INVITE_URL, SUPPORT_URL } from "@/config";
 
-const GLOW = "148, 163, 210"; // rgb of the glow, change to taste
-
-const link = "text-[15px] text-muted transition-colors hover:text-fg";
-
-const grain = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 -0.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
+const link = "text-[15px] text-white/60 transition-colors hover:text-white";
 
 const DiscordIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
@@ -16,8 +12,8 @@ const DiscordIcon = () => (
 function Column({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <nav className="flex flex-col gap-3.5" aria-label={title}>
-      <h3 className="flex items-center gap-2 text-sm font-medium">
-        <span className="h-1.5 w-1.5 rounded-full bg-fg/50" aria-hidden="true" />
+      <h3 className="flex items-center gap-2 text-sm font-medium text-white">
+        <span className="h-1.5 w-1.5 rounded-full bg-white/40" aria-hidden="true" />
         {title}
       </h3>
       {children}
@@ -25,61 +21,26 @@ function Column({ title, children }: { title: string; children: React.ReactNode 
   );
 }
 
-function Glow() {
-  return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] overflow-hidden" aria-hidden="true">
-      {/* soft base light */}
-      <div
-        className="absolute left-1/2 top-[45%] h-[140%] w-[75%] -translate-x-1/2 rounded-[50%]"
-        style={{ background: `radial-gradient(closest-side, rgba(${GLOW},0.22), rgba(${GLOW},0.06) 60%, transparent 100%)` }}
-      />
-      {/* grainy dome */}
-      <div
-        className="absolute left-1/2 top-[38%] h-[160%] w-[62%] -translate-x-1/2 rounded-[50%] opacity-70"
-        style={{
-          backgroundImage: grain,
-          backgroundSize: "220px 220px",
-          WebkitMaskImage: "radial-gradient(closest-side, #000 55%, transparent 100%)",
-          maskImage: "radial-gradient(closest-side, #000 55%, transparent 100%)",
-          backgroundColor: `rgba(${GLOW},0.35)`,
-          backgroundBlendMode: "multiply",
-        }}
-      />
-      {/* light streaks */}
-      <div className="absolute inset-x-0 bottom-0 top-[30%] flex justify-center gap-6 opacity-40">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="w-[3px] rounded-full"
-            style={{
-              height: `${60 + ((i * 17) % 40)}%`,
-              alignSelf: "flex-end",
-              transform: `rotate(${(i - 2) * 3}deg)`,
-              background: `linear-gradient(to top, rgba(${GLOW},0.7), transparent)`,
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function Footer() {
   return (
-    <footer className="mx-auto w-full max-w-[1400px] px-4 pb-4">
-      <div className="relative overflow-hidden rounded-[2rem] border border-line bg-black/20">
-        <Glow />
+    <footer className="mx-auto w-full max-w-[1400px] px-4 pb-4 pt-8">
+      <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)]">
+        {/* top edge highlight */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent"
+        />
 
-        <div className="relative z-10 px-8 pb-8 pt-14 sm:px-12">
+        <div className="px-8 pb-8 pt-12 sm:px-12">
           <div className="flex flex-col gap-12 lg:flex-row lg:justify-between">
             <div className="max-w-[40ch]">
-              <span className="text-xl font-semibold tracking-tight">{BOT_NAME}</span>
-              <p className="mt-4 text-[15px] leading-relaxed text-muted">
+              <span className="text-xl font-semibold tracking-tight text-white">{BOT_NAME}</span>
+              <p className="mt-4 text-[15px] leading-relaxed text-white/60">
                 Moderation, temporary voice channels and giveaways for your Discord server.
               </p>
               <a
                 href={INVITE_URL}
-                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-fg px-4 py-2.5 text-sm font-medium text-bg transition-opacity hover:opacity-90"
+                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black transition-opacity hover:opacity-90"
               >
                 <DiscordIcon />
                 Add to Discord
@@ -103,7 +64,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="mt-24 flex flex-col gap-2 border-t border-line/60 pt-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-14 flex flex-col gap-2 border-t border-white/10 pt-6 text-sm text-white/50 sm:flex-row sm:items-center sm:justify-between sm:pr-20">
             <p>© {new Date().getFullYear()} {BOT_NAME}. All rights reserved.</p>
             <p>Not affiliated with Discord Inc.</p>
           </div>
