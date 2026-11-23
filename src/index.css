@@ -48,6 +48,37 @@ body::after { background-size: 610px 610px; animation-duration: 7s; animation-de
 .btn-accent { box-shadow: 0 0 28px color-mix(in srgb, var(--color-brand) 30%, transparent); }
 .btn-outline { border: 1px solid rgb(255 255 255 / .14); font-weight: 500; }
 .btn-outline:hover { background: var(--color-surface-1); }
+
+/* rotating glow ring on hover for landing buttons.
+   .btn gets it automatically, add .glow-btn to anything else, .no-glow to opt out */
+@property --glow-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes glow-spin { to { --glow-angle: 360deg; } }
+
+@layer components {
+  .btn:not(.no-glow), .glow-btn { position: relative; }
+
+  .btn:not(.no-glow)::before, .btn:not(.no-glow)::after,
+  .glow-btn::before, .glow-btn::after {
+    content: ""; position: absolute; inset: -2px; padding: 2px; border-radius: inherit;
+    pointer-events: none; opacity: 0; transition: opacity .3s ease;
+    background: conic-gradient(from var(--glow-angle), transparent 0 55%, color-mix(in srgb, var(--color-accent-soft) 85%, transparent) 78%, #fff 90%, transparent 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    animation: glow-spin 2.2s linear infinite;
+  }
+  .btn:not(.no-glow)::after, .glow-btn::after { filter: blur(8px); }
+
+  .btn:not(.no-glow):hover::before, .btn:not(.no-glow):hover::after,
+  .btn:not(.no-glow):focus-visible::before, .btn:not(.no-glow):focus-visible::after,
+  .glow-btn:hover::before, .glow-btn:hover::after,
+  .glow-btn:focus-visible::before, .glow-btn:focus-visible::after { opacity: 1; }
+}
+
 .link { color: var(--color-accent-soft); } .link:hover { text-decoration: underline; }
 .card { background: radial-gradient(110% 70% at 50% 125%, color-mix(in srgb, var(--color-brand) 12%, transparent), transparent 62%), #0e0e11; border: 1px solid var(--color-line); transition: border-color .3s; }
 .card:hover { border-color: color-mix(in srgb, var(--color-brand) 35%, transparent); }
