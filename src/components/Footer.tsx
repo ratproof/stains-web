@@ -17,7 +17,7 @@ function Column({ title, children }: { title: string; children: React.ReactNode 
   return (
     <nav className="flex flex-col gap-2.5" aria-label={title}>
       <h3 className="flex items-center gap-2 text-sm font-medium text-white">
-        <span className="h-1.5 w-1.5 rounded-full bg-white/40" aria-hidden="true" />
+        <span className="h-1.5 w-1.5 rounded-full bg-white/50" aria-hidden="true" />
         {title}
       </h3>
       {children}
@@ -30,13 +30,13 @@ function Glow() {
   return (
     <div
       aria-hidden="true"
-      style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "48%", overflow: "hidden", pointerEvents: "none", zIndex: 0 }}
+      style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "55%", overflow: "hidden", pointerEvents: "none", zIndex: 0 }}
     >
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: `radial-gradient(ellipse 60% 100% at 50% 100%, rgba(${GLOW},0.5), rgba(${GLOW},0.14) 45%, transparent 75%)`,
+          background: `radial-gradient(ellipse 60% 100% at 50% 100%, rgba(${GLOW},0.55), rgba(${GLOW},0.16) 45%, transparent 75%)`,
         }}
       />
       <div
@@ -45,12 +45,12 @@ function Glow() {
           inset: 0,
           backgroundImage: grain,
           backgroundSize: "220px 220px",
-          opacity: 0.55,
+          opacity: 0.6,
           WebkitMaskImage: mask,
           maskImage: mask,
         }}
       />
-      <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "85%", display: "flex", justifyContent: "center", alignItems: "flex-end", gap: 26 }}>
+      <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "85%", display: "flex", justifyContent: "center", alignItems: "flex-end", gap: 24 }}>
         {[0, 1, 2, 3, 4].map((i) => (
           <div
             key={i}
@@ -71,31 +71,33 @@ function Glow() {
 
 export default function Footer() {
   return (
-    <footer className="mx-auto w-full max-w-[1200px] px-4 pb-4 pt-6">
-      <div className="relative isolate overflow-hidden rounded-[2.75rem] border border-white/10 bg-white/[0.03]">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent"
-        />
+    <footer className="mx-auto w-full max-w-[980px] px-4 pb-4 pt-6">
+      <div
+        className="relative isolate overflow-hidden rounded-[2.5rem] border border-white/[0.12] bg-gradient-to-b from-white/[0.08] to-white/[0.02]"
+        style={{
+          boxShadow:
+            "inset 0 1px 0 rgba(255,255,255,0.14), 0 30px 80px -30px rgba(0,0,0,0.9), 0 0 0 1px rgba(0,0,0,0.6)",
+        }}
+      >
         <Glow />
 
-        <div className="relative z-10 px-8 pb-6 pt-9 sm:px-12">
-          <div className="flex flex-col gap-8 lg:flex-row lg:justify-between">
-            <div className="max-w-[36ch]">
+        <div className="relative z-10 px-8 pb-5 pt-8 sm:px-10">
+          <div className="flex flex-col gap-8 sm:flex-row sm:justify-between sm:gap-10">
+            <div className="max-w-[30ch]">
               <span className="text-lg font-semibold tracking-tight text-white">{BOT_NAME}</span>
-              <p className="mt-2.5 text-sm leading-relaxed text-white/60">
-                Moderation, temporary voice channels and giveaways for your Discord server.
+              <p className="mt-2 text-sm leading-relaxed text-white/60">
+                Moderation, voice channels and giveaways for Discord servers.
               </p>
               <a
                 href={INVITE_URL}
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black shadow-[0_1px_0_rgba(255,255,255,0.6)_inset,0_6px_20px_-6px_rgba(255,255,255,0.35)] ring-1 ring-white/40 transition hover:-translate-y-px hover:shadow-[0_1px_0_rgba(255,255,255,0.6)_inset,0_10px_28px_-6px_rgba(255,255,255,0.45)] active:translate-y-0"
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black shadow-[0_1px_0_rgba(255,255,255,0.6)_inset,0_6px_20px_-6px_rgba(255,255,255,0.35)] ring-1 ring-white/40 transition hover:-translate-y-px active:translate-y-0"
               >
                 <DiscordIcon />
                 Add to Discord
               </a>
             </div>
 
-            <div className="grid grid-cols-2 gap-x-14 gap-y-8 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-x-12 gap-y-8 sm:grid-cols-3">
               <Column title="Product">
                 <Link className={link} to="/commands">Commands</Link>
                 <Link className={link} to="/embed-builder">Embed Builder</Link>
@@ -112,7 +114,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="mt-8 flex flex-col gap-1.5 border-t border-white/10 pt-4 text-[13px] text-white/50 sm:flex-row sm:items-center sm:justify-between sm:pr-20">
+          <div className="mt-7 flex flex-col gap-1.5 border-t border-white/10 pt-4 text-[13px] text-white/55 sm:flex-row sm:items-center sm:justify-between sm:pr-20">
             <p>© {new Date().getFullYear()} {BOT_NAME}. All rights reserved.</p>
             <p>Not affiliated with Discord Inc.</p>
           </div>
