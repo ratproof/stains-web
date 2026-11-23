@@ -1,7 +1,11 @@
 import { Link } from "react-router-dom";
 import { BOT_NAME, INVITE_URL, SUPPORT_URL } from "@/config";
 
-const link = "text-[15px] text-white/60 transition-colors hover:text-white";
+const GLOW = "148, 163, 210"; // rgb of the glow, change to taste
+
+const link = "text-sm text-white/60 transition-colors hover:text-white";
+
+const grain = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 -0.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
 
 const DiscordIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
@@ -11,7 +15,7 @@ const DiscordIcon = () => (
 
 function Column({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <nav className="flex flex-col gap-3.5" aria-label={title}>
+    <nav className="flex flex-col gap-2.5" aria-label={title}>
       <h3 className="flex items-center gap-2 text-sm font-medium text-white">
         <span className="h-1.5 w-1.5 rounded-full bg-white/40" aria-hidden="true" />
         {title}
@@ -21,33 +25,77 @@ function Column({ title, children }: { title: string; children: React.ReactNode 
   );
 }
 
+function Glow() {
+  const mask = "radial-gradient(ellipse 45% 90% at 50% 100%, #000 25%, transparent 80%)";
+  return (
+    <div
+      aria-hidden="true"
+      style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "48%", overflow: "hidden", pointerEvents: "none", zIndex: 0 }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `radial-gradient(ellipse 60% 100% at 50% 100%, rgba(${GLOW},0.5), rgba(${GLOW},0.14) 45%, transparent 75%)`,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: grain,
+          backgroundSize: "220px 220px",
+          opacity: 0.55,
+          WebkitMaskImage: mask,
+          maskImage: mask,
+        }}
+      />
+      <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "85%", display: "flex", justifyContent: "center", alignItems: "flex-end", gap: 26 }}>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            style={{
+              width: 4,
+              height: `${55 + ((i * 17) % 40)}%`,
+              borderRadius: 4,
+              transform: `rotate(${(i - 2) * 3}deg)`,
+              background: `linear-gradient(to top, rgba(${GLOW},0.6), transparent)`,
+              opacity: 0.5,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Footer() {
   return (
-    <footer className="mx-auto w-full max-w-[1400px] px-4 pb-4 pt-8">
-      <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)]">
-        {/* top edge highlight */}
+    <footer className="mx-auto w-full max-w-[1200px] px-4 pb-4 pt-6">
+      <div className="relative isolate overflow-hidden rounded-[2.75rem] border border-white/10 bg-white/[0.03]">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent"
+          className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent"
         />
+        <Glow />
 
-        <div className="px-8 pb-8 pt-12 sm:px-12">
-          <div className="flex flex-col gap-12 lg:flex-row lg:justify-between">
-            <div className="max-w-[40ch]">
-              <span className="text-xl font-semibold tracking-tight text-white">{BOT_NAME}</span>
-              <p className="mt-4 text-[15px] leading-relaxed text-white/60">
+        <div className="relative z-10 px-8 pb-6 pt-9 sm:px-12">
+          <div className="flex flex-col gap-8 lg:flex-row lg:justify-between">
+            <div className="max-w-[36ch]">
+              <span className="text-lg font-semibold tracking-tight text-white">{BOT_NAME}</span>
+              <p className="mt-2.5 text-sm leading-relaxed text-white/60">
                 Moderation, temporary voice channels and giveaways for your Discord server.
               </p>
               <a
                 href={INVITE_URL}
-                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black transition-opacity hover:opacity-90"
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black shadow-[0_1px_0_rgba(255,255,255,0.6)_inset,0_6px_20px_-6px_rgba(255,255,255,0.35)] ring-1 ring-white/40 transition hover:-translate-y-px hover:shadow-[0_1px_0_rgba(255,255,255,0.6)_inset,0_10px_28px_-6px_rgba(255,255,255,0.45)] active:translate-y-0"
               >
                 <DiscordIcon />
                 Add to Discord
               </a>
             </div>
 
-            <div className="grid grid-cols-2 gap-x-16 gap-y-10 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-x-14 gap-y-8 sm:grid-cols-3">
               <Column title="Product">
                 <Link className={link} to="/commands">Commands</Link>
                 <Link className={link} to="/embed-builder">Embed Builder</Link>
@@ -64,7 +112,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="mt-14 flex flex-col gap-2 border-t border-white/10 pt-6 text-sm text-white/50 sm:flex-row sm:items-center sm:justify-between sm:pr-20">
+          <div className="mt-8 flex flex-col gap-1.5 border-t border-white/10 pt-4 text-[13px] text-white/50 sm:flex-row sm:items-center sm:justify-between sm:pr-20">
             <p>© {new Date().getFullYear()} {BOT_NAME}. All rights reserved.</p>
             <p>Not affiliated with Discord Inc.</p>
           </div>
