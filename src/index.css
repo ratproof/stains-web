@@ -49,54 +49,35 @@ body::after { background-size: 610px 610px; animation-duration: 7s; animation-de
 .btn-outline { border: 1px solid rgb(255 255 255 / .14); font-weight: 500; }
 .btn-outline:hover { background: var(--color-surface-1); }
 
-/* rotating glow ring on hover for landing buttons.
-   .btn gets it automatically, add .glow-btn to anything else, .no-glow to opt out.
-   The keyframes below are tuned so the glow moves at roughly constant speed around a
-   wide (~3:1) button. A plain 0->360deg spin is constant in angle, not distance, so it
-   speeds up on the short sides. Taller/squarer buttons: use a plain 0deg -> 360deg. */
-@property --glow-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-@keyframes glow-spin {
-  0%       { --glow-angle: 0deg; }
-  3.125%   { --glow-angle: 26.6deg; }
-  6.25%    { --glow-angle: 45deg; }
-  9.375%   { --glow-angle: 56.3deg; }
-  12.5%    { --glow-angle: 63.4deg; }
-  18.75%   { --glow-angle: 71.6deg; }
-  25%      { --glow-angle: 90deg; }
-  31.25%   { --glow-angle: 108.4deg; }
-  37.5%    { --glow-angle: 116.6deg; }
-  43.75%   { --glow-angle: 135deg; }
-  50%      { --glow-angle: 180deg; }
-  56.25%   { --glow-angle: 225deg; }
-  62.5%    { --glow-angle: 243.4deg; }
-  68.75%   { --glow-angle: 251.6deg; }
-  75%      { --glow-angle: 270deg; }
-  81.25%   { --glow-angle: 288.4deg; }
-  87.5%    { --glow-angle: 296.6deg; }
-  90.625%  { --glow-angle: 303.7deg; }
-  93.75%   { --glow-angle: 315deg; }
-  96.875%  { --glow-angle: 333.4deg; }
-  100%     { --glow-angle: 360deg; }
-}
+/* glow that travels around the button edge at one constant speed (same speed on
+   straights and corners). .btn gets it automatically, add .glow-btn to anything else,
+   .no-glow to opt out. Path radius = button radius + 1px (13px for the 12px .btn);
+   change both together if you use a different radius. */
+@keyframes glow-travel { to { offset-distance: 100%; } }
 
 @layer components {
   .btn:not(.no-glow), .glow-btn { position: relative; }
 
   .btn:not(.no-glow)::before, .btn:not(.no-glow)::after,
   .glow-btn::before, .glow-btn::after {
-    content: ""; position: absolute; inset: -2px; padding: 2px; border-radius: inherit;
-    pointer-events: none; opacity: 0; transition: opacity .3s ease;
-    background: conic-gradient(from var(--glow-angle), transparent 0 55%, color-mix(in srgb, var(--color-accent-soft) 85%, transparent) 78%, #fff 90%, transparent 100%);
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-    animation: glow-spin 2.4s linear infinite;
+    content: ""; position: absolute; top: 0; left: 0; pointer-events: none; opacity: 0;
+    transition: opacity .3s ease;
+    offset-path: inset(-1px round 13px); /* centred on the 2px ring just outside the edge */
+    offset-rotate: auto;
+    offset-distance: 0%;
+    animation: glow-travel 2.4s linear infinite;
   }
-  .btn:not(.no-glow)::after, .glow-btn::after { filter: blur(8px); }
+
+  /* 2px ring segment: faded tail, bright head at the front */
+  .btn:not(.no-glow)::before, .glow-btn::before {
+    width: 90px; height: 2px; border-radius: 9999px;
+    background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--color-accent-soft) 85%, transparent) 50%, #fff 92%, transparent 100%);
+  }
+  /* soft blurred copy behind it */
+  .btn:not(.no-glow)::after, .glow-btn::after {
+    width: 90px; height: 4px; border-radius: 9999px; filter: blur(8px);
+    background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--color-accent-soft) 85%, transparent) 50%, #fff 92%, transparent 100%);
+  }
 
   .btn:not(.no-glow):hover::before, .btn:not(.no-glow):hover::after,
   .btn:not(.no-glow):focus-visible::before, .btn:not(.no-glow):focus-visible::after,
