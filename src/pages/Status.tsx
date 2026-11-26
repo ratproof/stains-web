@@ -1,147 +1,146 @@
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { BOT_NAME, SUPPORT_URL } from "@/config";
-import { useStatus } from "@/hooks/useStatus";
-import { G } from "@/components/ui/SectionHead";
+import { useQuery } from "@tanstack/react-query";
+import { BOT_NAME } from "@/config";
+import { fetchStatus, type ShardStatus } from "@/lib/api";
+import UsageGraph from "@/components/UsageGraph";
 
-function useCountUp(target: number | undefined, duration = 2800) {
-  const [value, setValue] = useState(0);
-  const from = useRef(0);
+const fmtUptime = (s: number) => {
+  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60);
+  return [d && `${d}d`, (d || h) && `${h}h`, (d || h || m) && `${m}m`, `${sec}s`].filter(Boolean).join(" ");
+};
+const ms = (n: number | null | undefined) => (n == null || !Number.isFinite(n) ? "n/a" : `${Math.round(n)}ms`);
+const num = (n: number | null | undefined) => (n == null ? "n/a" : n.toLocaleString("en-US"));
+const isUp = (s: ShardStatus) => s.connected !== false && s.ping != null && Number.isFinite(s.ping);
 
-  useEffect(() => {
-    if (target == null) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      from.current = target;
-      setValue(target);
-      return;
-    }
-    const start = from.current;
-    const t0 = performance.now();
-    let raf = 0;
-    const tick = (now: number) => {
-      const p = Math.min((now - t0) / duration, 1);
-      // easeOutQuint: fast start, long slow tail at the end
-      const eased = 1 - Math.pow(1 - p, 5);
-      const v = Math.round(start + (target - start) * eased);
-      from.current = v;
-      setValue(v);
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [target, duration]);
+// latency thresholds for the per shard bar
+const pingTone = (n: number | null | undefined) =>
+  n == null || !Number.isFinite(n) ? "bg-red-400" : n < 150 ? "bg-emerald-400" : n < 400 ? "bg-amber-400" : "bg-red-400";
+const pingWidth = (n: number | null | undefined) =>
+  n == null || !Number.isFinite(n) ? 0 : Math.max(4, Math.min(100, (n / 500) * 100));
 
-  return target == null ? null : value;
-}
+const tones = {
+  ok: { box: "border-emerald-500/20 border-l-emerald-400 bg-emerald-500/[0.06]", dot: "bg-emerald-400", text: "text-emerald-300" },
+  warn: { box: "border-amber-500/20 border-l-amber-400 bg-amber-500/[0.06]", dot: "bg-amber-400", text: "text-amber-300" },
+  bad: { box: "border-red-500/20 border-l-red-400 bg-red-500/[0.06]", dot: "bg-red-400", text: "text-red-300" },
+};
 
-function Squiggle({ children }: { children: React.ReactNode }) {
+function Banner({ tone, title, sub }: { tone: keyof typeof tones; title: string; sub: string }) {
+  const t = tones[tone];
   return (
-    <span className="relative inline-block">
-      <G>{children}</G>
-      <svg
-        aria-hidden
-        viewBox="0 0 200 12"
-        preserveAspectRatio="none"
-        className="absolute -bottom-2 left-0 h-2.5 w-full text-accent"
-        fill="none"
-      >
-        <path
-          d="M2 7C20 1 35 11 55 6S90 2 110 7 150 11 175 5 195 4 198 6"
-          stroke="currentColor"
-          strokeWidth="3"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
-    </span>
+    <div
+      role="status"
+      aria-live="polite"
+      className={`mt-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 rounded-lg border border-l-4 px-5 py-4 ${t.box}`}
+    >
+      <div className="flex items-center gap-3">
+        <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${t.dot}`} aria-hidden />
+        <p className={`text-lg font-semibold ${t.text}`}>{title}</p>
+      </div>
+      <p className="text-sm text-muted tabular-nums">{sub}</p>
+    </div>
   );
 }
 
-function MoneyBagIcon({ className }: { className?: string }) {
+const Stat = ({ label, value, sub }: { label: string; value: string; sub?: string }) => (
+  <div className="bg-[#101012] p-5">
+    <dt className="text-xs uppercase tracking-wide text-muted">{label}</dt>
+    <dd className="mt-2 text-2xl font-semibold tabular-nums sm:text-3xl">{value}</dd>
+    {sub && <p className="mt-1 text-sm text-muted">{sub}</p>}
+  </div>
+);
+
+function ShardRow({ s }: { s: ShardStatus }) {
+  const up = isUp(s);
   return (
-    <svg aria-hidden viewBox="0 0 24 24" className={className}>
-      <defs>
-        <mask id="money-bag-dollar">
-          <rect width="24" height="24" fill="#fff" />
-          <path
-            d="M15 13.3c0-1.1-1.3-1.8-3-1.8s-3 .7-3 1.9 1.3 1.6 3 2 3 .8 3 2.1-1.3 1.9-3 1.9-3-.7-3-1.8M12 9.6v1.9M12 19.4v1.9"
-            stroke="#000"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            fill="none"
-          />
-        </mask>
-      </defs>
-      <g fill="currentColor" mask="url(#money-bag-dollar)">
-        <path d="M7 1.5h10l-2.4 4H9.4z" />
-        <path d="M9.2 7h5.6c4 2 6.7 5.6 6.7 9.2 0 3.8-3.9 6.3-9.5 6.3s-9.5-2.5-9.5-6.3C2.5 12.6 5.2 9 9.2 7z" />
-      </g>
-    </svg>
+    <li className="grid grid-cols-2 items-center gap-x-4 gap-y-2 px-5 py-3.5 sm:grid-cols-[7rem_1fr_5rem_6rem_6rem]">
+      <p className="flex items-center gap-2.5 font-medium">
+        <span className={`h-2 w-2 shrink-0 rounded-full ${up ? "bg-emerald-400" : "bg-red-400"}`} aria-hidden />
+        Shard {s.id}
+        <span className="sr-only">{up ? "connected" : "offline"}</span>
+      </p>
+      <p className="text-right text-sm tabular-nums sm:order-3">{ms(s.ping)}</p>
+      <div className="col-span-2 h-1.5 overflow-hidden rounded-full bg-white/[0.06] sm:order-2 sm:col-span-1" aria-hidden>
+        <div className={`h-full rounded-full ${pingTone(s.ping)}`} style={{ width: `${pingWidth(s.ping)}%` }} />
+      </div>
+      <p className="hidden text-right text-sm tabular-nums text-muted sm:order-4 sm:block">{num(s.guilds)}</p>
+      <p className="hidden text-right text-sm tabular-nums text-muted sm:order-5 sm:block">{num(s.users)}</p>
+    </li>
   );
 }
 
-export default function Hero() {
-  const status = useStatus();
-  const users = useCountUp(status.data?.users);
-  const servers = useCountUp(status.data?.guilds);
+export default function Status() {
+  const { data, isLoading, isError, isFetching, dataUpdatedAt } = useQuery({
+    queryKey: ["status", "live"],
+    queryFn: fetchStatus,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
+  });
 
-  const avatar = status.data?.avatar_url?.replace("size=1024", "size=512");
-  const showAvatar = status.isLoading || !!avatar;
+  const updated = dataUpdatedAt
+    ? new Date(dataUpdatedAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    : null;
 
-  return (
-    <section className="relative flex min-h-[100svh] items-center px-4 py-24">
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
-        <div className="fade-in max-w-2xl">
-          <h1 className="max-w-3xl text-balance text-4xl sm:text-5xl lg:text-6xl">
-            Moderation that <Squiggle>works</Squiggle>.
-          </h1>
+  let body;
+  if (isLoading) {
+    body = (<>
+      <div className="mt-8 h-[4.25rem] animate-pulse rounded-lg bg-[#101012]" />
+      <div className="mt-4 h-28 animate-pulse rounded-lg bg-[#101012]" />
+    </>);
+  } else if (isError || !data) {
+    body = <Banner tone="bad" title="Can't reach the bot" sub="The status API isn't responding. Retrying automatically." />;
+  } else {
+    // a non-sharded bot sends shards: null, so show one synthetic shard from the totals
+    const shards: ShardStatus[] = data.shards?.length ? data.shards : [{ id: 0, ping: data.ping, guilds: data.guilds, users: data.users, connected: true }];
+    const up = shards.filter(isUp).length;
+    const tone = up === shards.length ? "ok" : up > 0 ? "warn" : "bad";
+    const title = tone === "ok" ? "All systems operational" : tone === "warn" ? "Partial outage" : "Major outage";
+    body = (<>
+      <Banner tone={tone} title={title} sub={`${up}/${shards.length} shards connected · ${ms(data.ping)} latency`} />
 
-          <p className="mt-6 max-w-[48ch] text-lg text-muted">
-            Voice channels and giveaways too.
-          </p>
+      <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line lg:grid-cols-4">
+        <Stat label="Guilds" value={num(data.guilds)} />
+        <Stat label="Users" value={num(data.users)} />
+        <Stat label="Latency" value={ms(data.ping)} />
+        <Stat label="Uptime" value={fmtUptime(data.uptime)} sub={`${up}/${shards.length} shards up`} />
+      </dl>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href={SUPPORT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-accent gap-2 rounded-md"
-            >
-              <MoneyBagIcon className="h-5 w-5" />
-              Purchase
-            </a>
-            <Link to="/commands" className="btn btn-outline gap-2 rounded-md">
-              Explore commands
-              <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-current">
-                <path d="M8.6 5.6 10 4.2l7.8 7.8-7.8 7.8-1.4-1.4 6.4-6.4z" />
-              </svg>
-            </Link>
-          </div>
-
-          {users != null && servers != null && (
-            <p className="mt-8 text-sm text-muted tabular-nums">
-              Powering <b className="text-fg">{users.toLocaleString("en-US")}</b> users across{" "}
-              <b className="text-fg">{servers.toLocaleString("en-US")}</b> servers
-            </p>
-          )}
+      {data.usage && (<>
+        <h2 className="mb-3 mt-12 text-xl">Command usage</h2>
+        <div className="rounded-lg border border-line bg-[#101012] p-5">
+          <UsageGraph usage={data.usage} />
         </div>
+      </>)}
 
-        {showAvatar && (
-          <div className="order-first shrink-0 lg:order-last">
-            {avatar ? (
-              <img
-                src={avatar}
-                alt={`${BOT_NAME} avatar`}
-                width={320}
-                height={320}
-                className="fade-in h-28 w-28 sm:h-40 sm:w-40 lg:h-72 lg:w-72 xl:h-80 xl:w-80"
-              />
-            ) : (
-              <div className="h-28 w-28 rounded-full bg-surface-2 sm:h-40 sm:w-40 lg:h-72 lg:w-72 xl:h-80 xl:w-80" aria-hidden />
-            )}
-          </div>
+      <h2 className="mb-3 mt-12 text-xl">Shards</h2>
+      <div className="overflow-hidden rounded-lg border border-line bg-[#101012]">
+        <div className="hidden grid-cols-[7rem_1fr_5rem_6rem_6rem] gap-x-4 border-b border-line px-5 py-2.5 text-xs uppercase tracking-wide text-muted sm:grid">
+          <span>Shard</span>
+          <span>Load</span>
+          <span className="text-right">Latency</span>
+          <span className="text-right">Guilds</span>
+          <span className="text-right">Users</span>
+        </div>
+        <ul className="divide-y divide-line">
+          {shards.map((s) => <ShardRow key={s.id} s={s} />)}
+        </ul>
+      </div>
+    </>);
+  }
+
+  return (
+    <main className="mx-auto max-w-[1100px] px-4 pb-24 pt-28">
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+        <div>
+          <h1 className="text-4xl sm:text-5xl">{BOT_NAME} status</h1>
+          <p className="mt-2 text-muted">Live health of the bot.</p>
+        </div>
+        {updated && (
+          <p className="flex items-center gap-2 text-sm text-muted tabular-nums">
+            <span className={`h-2 w-2 rounded-full ${isFetching ? "animate-pulse bg-accent" : "bg-white/25"}`} aria-hidden />
+            Updated {updated}
+          </p>
         )}
       </div>
-    </section>
+      {body}
+    </main>
   );
 }
