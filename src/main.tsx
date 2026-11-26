@@ -18,3 +18,20 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </QueryClientProvider>
   </React.StrictMode>
 );
+
+const loader = document.getElementById("loader");
+
+const hideLoader = () => {
+  if (!loader) return;
+  loader.classList.add("hide");
+  loader.addEventListener("transitionend", () => loader.remove(), { once: true });
+  setTimeout(() => loader.remove(), 600); // fallback if transitionend never fires
+};
+
+const loaded =
+  document.readyState === "complete"
+    ? Promise.resolve()
+    : new Promise<void>((r) => window.addEventListener("load", () => r(), { once: true }));
+
+Promise.all([loaded, document.fonts.ready]).then(() => requestAnimationFrame(hideLoader));
+setTimeout(hideLoader, 6000); // safety net
