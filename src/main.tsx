@@ -33,5 +33,8 @@ const loaded =
     ? Promise.resolve()
     : new Promise<void>((r) => window.addEventListener("load", () => r(), { once: true }));
 
-Promise.all([loaded, document.fonts.ready]).then(() => requestAnimationFrame(hideLoader));
-setTimeout(hideLoader, 6000); // safety net
+const MIN_MS = 3000; // loader stays up at least 3s total
+const minTime = new Promise<void>((r) => setTimeout(r, Math.max(0, MIN_MS - performance.now())));
+
+Promise.all([loaded, document.fonts.ready, minTime]).then(() => requestAnimationFrame(hideLoader));
+setTimeout(hideLoader, 8000); // safety net
