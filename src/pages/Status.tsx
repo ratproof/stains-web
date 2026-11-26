@@ -1,98 +1,147 @@
-import { useQuery } from "@tanstack/react-query";
-import { BOT_NAME } from "@/config";
-import { fetchStatus, type ShardStatus } from "@/lib/api";
-import UsageGraph from "@/components/UsageGraph";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { BOT_NAME, SUPPORT_URL } from "@/config";
+import { useStatus } from "@/hooks/useStatus";
+import { G } from "@/components/ui/SectionHead";
 
-const fmtUptime = (s: number) => {
-  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60);
-  return [d && `${d}d`, (d || h) && `${h}h`, (d || h || m) && `${m}m`, `${sec}s`].filter(Boolean).join(" ");
-};
-const ms = (n: number | null | undefined) => (n == null || !Number.isFinite(n) ? "n/a" : `${Math.round(n)}ms`);
-const isUp = (s: ShardStatus) => s.connected !== false && s.ping != null && Number.isFinite(s.ping);
+function useCountUp(target: number | undefined, duration = 2800) {
+  const [value, setValue] = useState(0);
+  const from = useRef(0);
 
-const tones = {
-  ok: { box: "border-emerald-500/25 bg-emerald-500/[0.07]", dot: "bg-emerald-400", text: "text-emerald-300" },
-  warn: { box: "border-amber-500/25 bg-amber-500/[0.07]", dot: "bg-amber-400", text: "text-amber-300" },
-  bad: { box: "border-red-500/25 bg-red-500/[0.07]", dot: "bg-red-400", text: "text-red-300" },
-};
+  useEffect(() => {
+    if (target == null) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      from.current = target;
+      setValue(target);
+      return;
+    }
+    const start = from.current;
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = Math.min((now - t0) / duration, 1);
+      // easeOutQuint: fast start, long slow tail at the end
+      const eased = 1 - Math.pow(1 - p, 5);
+      const v = Math.round(start + (target - start) * eased);
+      from.current = v;
+      setValue(v);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
 
-function Banner({ tone, title, sub }: { tone: keyof typeof tones; title: string; sub: string }) {
-  const t = tones[tone];
+  return target == null ? null : value;
+}
+
+function Squiggle({ children }: { children: React.ReactNode }) {
   return (
-    <div role="status" aria-live="polite" className={`mt-8 flex items-center gap-4 rounded-3xl border px-6 py-5 ${t.box}`}>
-      <span className={`h-3.5 w-3.5 shrink-0 rounded-full ${t.dot}`} aria-hidden />
-      <div><p className={`font-semibold ${t.text}`}>{title}</p><p className="text-sm text-muted">{sub}</p></div>
-    </div>
+    <span className="relative inline-block">
+      <G>{children}</G>
+      <svg
+        aria-hidden
+        viewBox="0 0 200 12"
+        preserveAspectRatio="none"
+        className="absolute -bottom-2 left-0 h-2.5 w-full text-accent"
+        fill="none"
+      >
+        <path
+          d="M2 7C20 1 35 11 55 6S90 2 110 7 150 11 175 5 195 4 198 6"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+    </span>
   );
 }
-const Stat = ({ label, value, sub }: { label: string; value: string; sub?: string }) => (
-  <div className="min-h-[7.5rem] rounded-3xl border border-line bg-[#101012] p-6">
-    <p className="text-[13px] uppercase tracking-wide text-muted">{label}</p>
-    <p className="mt-2 text-3xl font-semibold">{value}</p>
-    {sub && <p className="mt-1 text-sm text-muted">{sub}</p>}
-  </div>
-);
-const Mini = ({ value, label }: { value: string; label: string }) => (
-  <div className="text-center"><p className="font-semibold">{value}</p><p className="text-[11px] uppercase tracking-wide text-muted">{label}</p></div>
-);
 
-export default function Status() {
-  const { data, isLoading, isError } = useQuery({ queryKey: ["status", "live"], queryFn: fetchStatus, refetchInterval: 15_000, refetchOnWindowFocus: true });
+function MoneyBagIcon({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" className={className}>
+      <defs>
+        <mask id="money-bag-dollar">
+          <rect width="24" height="24" fill="#fff" />
+          <path
+            d="M15 13.3c0-1.1-1.3-1.8-3-1.8s-3 .7-3 1.9 1.3 1.6 3 2 3 .8 3 2.1-1.3 1.9-3 1.9-3-.7-3-1.8M12 9.6v1.9M12 19.4v1.9"
+            stroke="#000"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </mask>
+      </defs>
+      <g fill="currentColor" mask="url(#money-bag-dollar)">
+        <path d="M7 1.5h10l-2.4 4H9.4z" />
+        <path d="M9.2 7h5.6c4 2 6.7 5.6 6.7 9.2 0 3.8-3.9 6.3-9.5 6.3s-9.5-2.5-9.5-6.3C2.5 12.6 5.2 9 9.2 7z" />
+      </g>
+    </svg>
+  );
+}
 
-  let body;
-  if (isLoading) {
-    body = (<>
-      <div className="mt-8 h-20 animate-pulse rounded-3xl bg-[#101012]" />
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="h-[7.5rem] animate-pulse rounded-3xl bg-[#101012]" />)}</div>
-    </>);
-  } else if (isError || !data) {
-    body = <Banner tone="bad" title="Can't reach the bot" sub="The status API isn't responding. Retrying automatically." />;
-  } else {
-    // a non-sharded bot sends shards: null, so show one synthetic shard from the totals
-    const shards: ShardStatus[] = data.shards?.length ? data.shards : [{ id: 0, ping: data.ping, guilds: data.guilds, users: data.users, connected: true }];
-    const up = shards.filter(isUp).length;
-    const tone = up === shards.length ? "ok" : up > 0 ? "warn" : "bad";
-    const title = tone === "ok" ? "All systems operational" : tone === "warn" ? "Partial outage" : "Major outage";
-    body = (<>
-      <Banner tone={tone} title={title} sub={`${up}/${shards.length} shards connected · ${ms(data.ping)} latency`} />
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Guilds" value={data.guilds.toLocaleString()} />
-        <Stat label="Users" value={data.users.toLocaleString()} />
-        <Stat label="Latency" value={ms(data.ping)} />
-        <Stat label="Uptime" value={fmtUptime(data.uptime)} sub={`${up}/${shards.length} shards up`} />
-      </div>
-      {data.usage && (<>
-        <h2 className="mb-4 mt-12 text-2xl">Command usage</h2>
-        <div className="rounded-3xl border border-line bg-[#101012] p-6">
-          <UsageGraph usage={data.usage} />
-        </div>
-      </>)}
-      <h2 className="mb-4 mt-12 text-2xl">Shards</h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {shards.map((s) => (
-          <div key={s.id} className="rounded-3xl border border-line bg-[#101012] p-6">
-            <div className="flex items-center justify-between">
-              <p className="font-semibold">Shard {s.id}</p>
-              <span className={`flex items-center gap-2 text-sm ${isUp(s) ? "text-emerald-400" : "text-red-400"}`}>
-                <span className={`h-2 w-2 rounded-full ${isUp(s) ? "bg-emerald-400" : "bg-red-400"}`} aria-hidden />{isUp(s) ? "connected" : "offline"}
-              </span>
-            </div>
-            <div className="mt-5 flex justify-around gap-2">
-              <Mini value={ms(s.ping)} label="Latency" />
-              {s.guilds != null && <Mini value={s.guilds.toLocaleString()} label="Guilds" />}
-              {s.users != null && <Mini value={s.users.toLocaleString()} label="Users" />}
-            </div>
-          </div>
-        ))}
-      </div>
-    </>);
-  }
+export default function Hero() {
+  const status = useStatus();
+  const users = useCountUp(status.data?.users);
+  const servers = useCountUp(status.data?.guilds);
+
+  const avatar = status.data?.avatar_url?.replace("size=1024", "size=512");
+  const showAvatar = status.isLoading || !!avatar;
 
   return (
-    <main className="mx-auto max-w-[1200px] px-4 pb-24 pt-28">
-      <h1 className="text-4xl sm:text-5xl">{BOT_NAME} status</h1>
-      <p className="mt-2 text-muted">Live health of the {BOT_NAME} bot, refreshed automatically.</p>
-      {body}
-    </main>
+    <section className="relative flex min-h-[100svh] items-center px-4 py-24">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
+        <div className="fade-in max-w-2xl">
+          <h1 className="max-w-3xl text-balance text-4xl sm:text-5xl lg:text-6xl">
+            Moderation that <Squiggle>works</Squiggle>.
+          </h1>
+
+          <p className="mt-6 max-w-[48ch] text-lg text-muted">
+            Voice channels and giveaways too.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a
+              href={SUPPORT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-accent gap-2 rounded-md"
+            >
+              <MoneyBagIcon className="h-5 w-5" />
+              Purchase
+            </a>
+            <Link to="/commands" className="btn btn-outline gap-2 rounded-md">
+              Explore commands
+              <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-current">
+                <path d="M8.6 5.6 10 4.2l7.8 7.8-7.8 7.8-1.4-1.4 6.4-6.4z" />
+              </svg>
+            </Link>
+          </div>
+
+          {users != null && servers != null && (
+            <p className="mt-8 text-sm text-muted tabular-nums">
+              Powering <b className="text-fg">{users.toLocaleString("en-US")}</b> users across{" "}
+              <b className="text-fg">{servers.toLocaleString("en-US")}</b> servers
+            </p>
+          )}
+        </div>
+
+        {showAvatar && (
+          <div className="order-first shrink-0 lg:order-last">
+            {avatar ? (
+              <img
+                src={avatar}
+                alt={`${BOT_NAME} avatar`}
+                width={320}
+                height={320}
+                className="fade-in h-28 w-28 sm:h-40 sm:w-40 lg:h-72 lg:w-72 xl:h-80 xl:w-80"
+              />
+            ) : (
+              <div className="h-28 w-28 rounded-full bg-surface-2 sm:h-40 sm:w-40 lg:h-72 lg:w-72 xl:h-80 xl:w-80" aria-hidden />
+            )}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
