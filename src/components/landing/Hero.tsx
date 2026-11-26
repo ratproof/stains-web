@@ -64,18 +64,17 @@ function MoneyBagIcon({ className }: { className?: string }) {
         <mask id="money-bag-dollar">
           <rect width="24" height="24" fill="#fff" />
           <path
-            d="M14 13.6c0-.8-.9-1.3-2-1.3s-2 .5-2 1.4c0 .9.9 1.2 2 1.5s2 .6 2 1.6c0 .9-.9 1.4-2 1.4s-2-.5-2-1.3M12 11.2v1.1M12 18.2v1.1"
+            d="M15 13.3c0-1.1-1.3-1.8-3-1.8s-3 .7-3 1.9 1.3 1.6 3 2 3 .8 3 2.1-1.3 1.9-3 1.9-3-.7-3-1.8M12 9.6v1.9M12 19.4v1.9"
             stroke="#000"
-            strokeWidth="1.2"
+            strokeWidth="1.7"
             strokeLinecap="round"
             fill="none"
           />
         </mask>
       </defs>
       <g fill="currentColor" mask="url(#money-bag-dollar)">
-        <path d="M7.7 2.2C9.9 3.4 14.1 3.4 16.3 2.2l-1.7 3H9.4z" />
-        <path d="M9 6.2h6v1.4H9z" />
-        <path d="M9.6 8.4C6.2 10 4 13.2 4 16.6 4 19.8 7.5 22 12 22s8-2.2 8-5.4c0-3.4-2.2-6.6-5.6-8.2z" />
+        <path d="M7 1.5h10l-2.4 4H9.4z" />
+        <path d="M9.2 7h5.6c4 2 6.7 5.6 6.7 9.2 0 3.8-3.9 6.3-9.5 6.3s-9.5-2.5-9.5-6.3C2.5 12.6 5.2 9 9.2 7z" />
       </g>
     </svg>
   );
