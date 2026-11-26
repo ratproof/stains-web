@@ -17,7 +17,37 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
 
+  <style>
+    #loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      background: #000;
+      transition: opacity .35s ease, visibility .35s;
+    }
+    #loader.hide { opacity: 0; visibility: hidden; }
+    #loader img {
+      width: 56px;
+      height: 56px;
+      animation: loader-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes loader-pulse {
+      0%, 100% { opacity: .35; }
+      50%      { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #loader img { animation: none; }
+      #loader { transition: none; }
+    }
+  </style>
+
   <script id="discord:component-embed" type="application/json">{"component":{"type":17,"components":[{"type":10,"content":"## [stains](https://stains.rocks/)\n"},{"type":10,"content":"moderation and tools to run a versatile community."},{"type":12,"items":[{"media":{"url":"https://stains.rocks/banner.png"}}]},{"type":14,"divider":true,"spacing":1},{"type":1,"components":[{"type":2,"style":5,"label":"Invite","url":"https://discord.com/oauth2/authorize?client_id=1571608833565004047"},{"type":2,"style":5,"label":"Support","url":"https://discord.gg/longest"},{"type":2,"style":5,"label":"Commands","url":"https://stains.rocks/help"},{"type":2,"style":5,"label":"Status","url":"https://stains.rocks/status"}]}]}}</script>
 </head>
-<body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body>
+<body>
+  <div id="loader"><img src="/favicon.png" alt="" width="56" height="56" /></div>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
 </html>
