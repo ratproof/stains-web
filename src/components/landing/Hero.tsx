@@ -93,11 +93,11 @@ export default function Hero() {
       <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
         <div className="fade-in max-w-2xl">
           <h1>
-            Moderation, voice channels and <Squiggle>giveaways</Squiggle> for your server.
+            The bot your mods <Squiggle>want</Squiggle>.
           </h1>
 
           <p className="mt-6 max-w-[48ch] text-lg text-muted">
-            Filters that do what you expect, member-run voice channels, and giveaways with real requirements.
+            Moderation, voice channels, giveaways.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
