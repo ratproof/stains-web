@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { BOT_NAME, INVITE_URL } from "@/config";
+import { BOT_NAME, SUPPORT_URL } from "@/config";
 import { useStatus } from "@/hooks/useStatus";
 import { G } from "@/components/ui/SectionHead";
 
@@ -78,13 +78,34 @@ export default function Hero() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href={INVITE_URL} className="btn btn-accent gap-2 rounded-full">
-              <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-current">
-                <path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7z" />
+            <a
+              href={SUPPORT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-accent gap-2 rounded-md"
+            >
+              <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4">
+                <defs>
+                  <mask id="bag-dollar">
+                    <rect width="24" height="24" fill="#fff" />
+                    <path
+                      d="M14 12.9c0-.9-.9-1.4-2-1.4s-2 .5-2 1.4.9 1.2 2 1.5 2 .7 2 1.6-.9 1.5-2 1.5-2-.6-2-1.5M12 10.2v1.3M12 17.5v1.3"
+                      stroke="#000"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                      fill="none"
+                    />
+                  </mask>
+                </defs>
+                <path
+                  mask="url(#bag-dollar)"
+                  fill="currentColor"
+                  d="M8.2 2.5h7.6l-1.9 3c3.1 1.1 5.6 4.5 5.6 8.2 0 4.4-3.3 8.3-7.5 8.3s-7.5-3.9-7.5-8.3c0-3.7 2.5-7.1 5.6-8.2z"
+                />
               </svg>
-              Add to Discord
+              Purchase
             </a>
-            <Link to="/commands" className="btn btn-outline gap-2 rounded-full">
+            <Link to="/commands" className="btn btn-outline gap-2 rounded-md">
               Explore commands
               <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-current">
                 <path d="M8.6 5.6 10 4.2l7.8 7.8-7.8 7.8-1.4-1.4 6.4-6.4z" />
