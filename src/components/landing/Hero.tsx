@@ -92,12 +92,12 @@ export default function Hero() {
     <section className="relative flex min-h-[100svh] items-center px-4 py-24">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
         <div className="fade-in max-w-2xl">
-          <h1>
-            The bot your mods <Squiggle>want</Squiggle>.
+          <h1 className="max-w-3xl text-balance text-4xl sm:text-5xl lg:text-6xl">
+            Moderation that <Squiggle>works</Squiggle>.
           </h1>
 
           <p className="mt-6 max-w-[48ch] text-lg text-muted">
-            Moderation, voice channels, giveaways.
+            Voice channels and giveaways too.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
