@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { BOT_NAME, SUPPORT_URL, SUPPORT_URL } from "@/config";
+import { BOT_NAME, SUPPORT_URL } from "@/config";
 
 const GLOW = "148, 163, 210"; // rgb of the glow, change to taste
 
