@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { BOT_NAME, INVITE_URL, SUPPORT_URL } from "@/config";
+import { BOT_NAME, SUPPORT_URL, SUPPORT_URL } from "@/config";
 
 const GLOW = "148, 163, 210"; // rgb of the glow, change to taste
 
@@ -89,11 +89,11 @@ export default function Footer() {
                 Moderation, voice channels and giveaways for Discord servers.
               </p>
               <a
-                href={INVITE_URL}
+                href={SUPPORT_URL}
                 className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black shadow-[0_1px_0_rgba(255,255,255,0.6)_inset,0_6px_20px_-6px_rgba(255,255,255,0.35)] ring-1 ring-white/40 transition hover:-translate-y-px active:translate-y-0"
               >
                 <DiscordIcon />
-                Add to Discord
+                Purchase Whitelist
               </a>
             </div>
 
@@ -105,7 +105,7 @@ export default function Footer() {
               </Column>
               <Column title="Resources">
                 <a className={link} href={SUPPORT_URL}>Support Server</a>
-                <a className={link} href={INVITE_URL}>Invite</a>
+                <a className={link} href={SUPPORT_URL}>Purchase</a>
               </Column>
               <Column title="Legal">
                 <Link className={link} to="/terms">Terms of Service</Link>
