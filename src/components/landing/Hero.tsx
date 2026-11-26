@@ -57,6 +57,30 @@ function Squiggle({ children }: { children: React.ReactNode }) {
   );
 }
 
+function MoneyBagIcon({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" className={className}>
+      <defs>
+        <mask id="money-bag-dollar">
+          <rect width="24" height="24" fill="#fff" />
+          <path
+            d="M14 13.6c0-.8-.9-1.3-2-1.3s-2 .5-2 1.4c0 .9.9 1.2 2 1.5s2 .6 2 1.6c0 .9-.9 1.4-2 1.4s-2-.5-2-1.3M12 11.2v1.1M12 18.2v1.1"
+            stroke="#000"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </mask>
+      </defs>
+      <g fill="currentColor" mask="url(#money-bag-dollar)">
+        <path d="M7.7 2.2C9.9 3.4 14.1 3.4 16.3 2.2l-1.7 3H9.4z" />
+        <path d="M9 6.2h6v1.4H9z" />
+        <path d="M9.6 8.4C6.2 10 4 13.2 4 16.6 4 19.8 7.5 22 12 22s8-2.2 8-5.4c0-3.4-2.2-6.6-5.6-8.2z" />
+      </g>
+    </svg>
+  );
+}
+
 export default function Hero() {
   const status = useStatus();
   const users = useCountUp(status.data?.users);
@@ -84,25 +108,7 @@ export default function Hero() {
               rel="noopener noreferrer"
               className="btn btn-accent gap-2 rounded-md"
             >
-              <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4">
-                <defs>
-                  <mask id="bag-dollar">
-                    <rect width="24" height="24" fill="#fff" />
-                    <path
-                      d="M14 12.9c0-.9-.9-1.4-2-1.4s-2 .5-2 1.4.9 1.2 2 1.5 2 .7 2 1.6-.9 1.5-2 1.5-2-.6-2-1.5M12 10.2v1.3M12 17.5v1.3"
-                      stroke="#000"
-                      strokeWidth="1.2"
-                      strokeLinecap="round"
-                      fill="none"
-                    />
-                  </mask>
-                </defs>
-                <path
-                  mask="url(#bag-dollar)"
-                  fill="currentColor"
-                  d="M8.2 2.5h7.6l-1.9 3c3.1 1.1 5.6 4.5 5.6 8.2 0 4.4-3.3 8.3-7.5 8.3s-7.5-3.9-7.5-8.3c0-3.7 2.5-7.1 5.6-8.2z"
-                />
-              </svg>
+              <MoneyBagIcon className="h-4 w-4" />
               Purchase
             </a>
             <Link to="/commands" className="btn btn-outline gap-2 rounded-md">
