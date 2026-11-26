@@ -108,7 +108,7 @@ export default function Hero() {
               rel="noopener noreferrer"
               className="btn btn-accent gap-2 rounded-md"
             >
-              <MoneyBagIcon className="h-4 w-4" />
+              <MoneyBagIcon className="h-5 w-5" />
               Purchase
             </a>
             <Link to="/commands" className="btn btn-outline gap-2 rounded-md">
