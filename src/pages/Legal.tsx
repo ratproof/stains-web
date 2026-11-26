@@ -2,7 +2,12 @@ import { BOT_NAME, CONTACT_EMAIL, SUPPORT_URL } from "@/config";
 
 type Section = { h: string; p?: string[]; ul?: string[]; after?: string[] };
 
-const UPDATED = "October 11, 2026";
+const UPDATED = "November 26, 2026";
+
+// Fill these in with your real values before deploying.
+const MESSAGE_LOG_DAYS = "7";
+const COMMAND_LOG_DAYS = "30";
+const LYRICS_PROVIDER = "Musixmatch";
 
 const TERMS: Section[] = [
   { h: "1. Agreement", p: [
@@ -55,27 +60,32 @@ const PRIVACY: Section[] = [
     "Discord identifiers: user IDs, usernames and display names, and avatar URLs;",
     "Server information: server IDs and names, plus channel, role and message IDs and timestamps needed to carry out commands;",
     "Command input: the arguments you provide when you run a command;",
+    "Message content: the text of messages that start with a command prefix, of messages that match an autoresponder trigger set up by server staff, and, if server staff turn on message logs, the text of deleted and edited messages;",
+    "Music activity: when you run the lyrics command, the song title and artist from your Spotify activity on Discord. This is read only at that moment, only for the person running the command, and isn't stored;",
     "Settings and records created through the Bot: server configuration, moderation actions (such as warnings, mutes and bans with their reasons), voice channel ownership and settings, and giveaway entries;",
+    "Feature data: information tied to your user ID and server for features you use, such as economy balances, levels and XP, interaction counters, starboard entries, and ticket conversations and transcripts;",
+    "Command usage logs: the command name, whether it was a prefix or slash command, your user ID, server ID and channel ID, and, for prefix commands, the text of the command message. These go to a private channel that only the Bot's developers can see and are used for debugging and abuse prevention;",
     "Linked accounts: if you connect a Last.fm username, that username;",
     "Basic technical data: standard server logs and error reports used to keep the Services running.",
-  ], after: ["We don't ask for passwords, payment card details or your real name, and the Bot doesn't read direct messages between you and other people."] },
+  ], after: ["We don't ask for passwords, payment card details or your real name, and the Bot doesn't read direct messages between you and other people. Outside the features described above, we don't store the content of messages sent in your servers."] },
   { h: "3. How we use it", p: ["We use information:"], ul: [
     "to run commands and features you or your server staff ask for;",
     "to store the settings and records your server relies on;",
     "to prevent abuse, enforce our Terms and keep the Services secure;",
     "to find and fix bugs and improve reliability;",
     "to comply with the law." ],
-    after: ["We don't use your data for advertising and we don't build advertising profiles."] },
+    after: ["We don't use your data for advertising and we don't build advertising profiles. Message content is only used for the features described above, and is never used for profiling, analytics or to train any AI model."] },
   { h: "4. How long we keep it", p: [
     "Data is kept only as long as it's needed for the feature it supports. Short-lived data, such as temporary caches used for filtering, is cleared automatically. Server settings and records stay until server staff remove them, or until the Bot has been removed from the server and the data is deleted, which we aim to do within 30 days.",
+    `Deleted and edited message logs are kept for ${MESSAGE_LOG_DAYS} days and then deleted automatically. Command usage logs are kept for ${COMMAND_LOG_DAYS} days. Ticket transcripts are kept until the ticket is deleted by server staff or the Bot is removed from the server.`,
     "Backups and logs may keep copies for a limited extra time before they're overwritten." ] },
   { h: "5. Who we share it with", p: [
-    "We don't sell or rent your information. We share it only with service providers who help us run the Services (such as hosting), with Discord and Last.fm as needed for features you use, and when the law or a valid legal process requires it or to protect the rights and safety of users and the Services.",
-    "Server staff can see moderation records and settings for their own server, as part of how the Bot works." ] },
+    `We don't sell or rent your information. We share it only with service providers who help us run the Services (such as hosting), with Discord and Last.fm as needed for features you use, with ${LYRICS_PROVIDER} (we send them the song title and artist to fetch lyrics), and when the law or a valid legal process requires it or to protect the rights and safety of users and the Services.`,
+    "Server staff can see moderation records, settings and, where they have turned it on, message logs for their own server, as part of how the Bot works." ] },
   { h: "6. Security", p: [
     "We use reasonable technical and organisational measures to protect the data we hold. No online service is completely secure, so we can't guarantee absolute security." ] },
   { h: "7. Your choices and rights", p: [
-    "You can ask us to tell you what we hold about you, to correct it, or to delete it, by emailing us from the contact address below. We may need to verify who you are first, and we'll respond within a reasonable time (generally within 30 days).",
+    "You can ask us to tell you what we hold about you, to correct it, or to delete it, including any logged messages, by emailing us from the contact address below. We may need to verify who you are first, and we'll respond within a reasonable time (generally within 30 days).",
     "Depending on where you live, you may have extra rights under local data protection law, such as objecting to certain processing. Some information may need to be kept where we have a legal or security reason. You can also stop all collection by removing the Bot from your server and unlinking any connected accounts." ] },
   { h: "8. Children", p: [
     "The Services are not meant for anyone under 13, or under the minimum age Discord allows in your country. If you believe a child has given us information, contact us and we'll delete it." ] },
