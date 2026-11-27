@@ -93,11 +93,11 @@ export default function Hero() {
       <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
         <div className="fade-in max-w-2xl">
           <h1 className="max-w-3xl text-balance text-4xl sm:text-5xl lg:text-6xl">
-            Moderation that <Squiggle>works</Squiggle>.
+            stains is Discord's all-in-one app
           </h1>
 
           <p className="mt-6 max-w-[48ch] text-lg text-muted">
-            Voice channels and giveaways too.
+            Meet the leading bot for management and engagement. Built to elevate your community’s experience, streamline server management, and provide you access to premium resources for every necessity.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
