@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { BOT_NAME, SUPPORT_URL } from "@/config";
 
-const GLOW = "148, 163, 210"; // rgb of the glow, change to taste
+const GLOW = "74, 87, 127"; // #4A577F, rgb of the glow, change to taste
 
 const link = "text-sm text-white/60 transition-colors hover:text-white";
 
