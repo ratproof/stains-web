@@ -17,7 +17,6 @@ const LINE = "rgba(255,255,255,0.08)";
 const UP = "#4ade80";
 const DOWN = "#f87171";
 const L = 44, R = 14, T = 20, B = 30;
-const BAR_MAX = 14; // up to this many days we draw bars instead of a line
 
 type Pt = [number, number];
 
@@ -58,14 +57,12 @@ const nf = (v: number, o?: Intl.NumberFormatOptions) => v.toLocaleString("en-US"
 const CSS = `
 .ug-line{stroke-dasharray:1 1;stroke-dashoffset:1;animation:ug-draw .9s cubic-bezier(.4,0,.2,1) forwards}
 .ug-area{animation:ug-fade .8s ease-out both}
-.ug-bar{transform-box:fill-box;transform-origin:50% 100%;animation:ug-grow .6s cubic-bezier(.4,0,.2,1) both;transition:opacity .15s}
 .ug-chart{outline:none;border-radius:8px}
 .ug-chart:focus-visible{outline:2px solid ${ACCENT};outline-offset:6px}
 .ug-btn:hover{color:${TEXT}}
 @keyframes ug-draw{to{stroke-dashoffset:0}}
 @keyframes ug-fade{from{opacity:0}to{opacity:1}}
-@keyframes ug-grow{from{transform:scaleY(0)}}
-@media (prefers-reduced-motion:reduce){.ug-line,.ug-area,.ug-bar{animation:none}.ug-line{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.ug-line{animation:none;stroke-dashoffset:0}.ug-area{animation:none}}
 `;
 
 function Cell({ label, sub, children }: { label: string; sub: React.ReactNode; children: React.ReactNode }) {
@@ -108,7 +105,6 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
   const isAll = range === "all";
   const days = isAll ? all : all.slice(-range);
   const n = days.length;
-  const bars = n <= BAR_MAX;
   const active = Math.min(hover ?? n - 1, n - 1);
   const total = days.reduce((a, d) => a + d.uses, 0);
   const average = Math.round((total / n) * 10) / 10;
@@ -123,7 +119,7 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
   const longSpan = n > 300;
 
   // geometry
-  const h = width < 420 ? 210 : 260;
+  const h = width < 420 ? 210 : 270;
   const plotW = width - L - R;
   const maxV = Math.max(1, ...days.map((d) => d.uses));
   const raw = maxV / 4;
@@ -132,13 +128,10 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
   const step = Math.max(1, (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * pow);
   const top = step * 4;
 
-  const slot = plotW / n;
-  const bw = Math.min(56, slot * 0.58);
-  const x = (i: number) =>
-    bars ? L + slot * (i + 0.5) : n === 1 ? L + plotW / 2 : L + (i * plotW) / (n - 1);
+  const x = (i: number) => (n === 1 ? L + plotW / 2 : L + (i * plotW) / (n - 1));
   const y = (v: number) => h - B - (v / top) * (h - B - T);
   const pts: Pt[] = days.map((d, i) => [x(i), y(d.uses)]);
-  const curve = bars ? "" : smooth(pts);
+  const curve = smooth(pts);
   const base = y(0);
   const [ax, ay] = pts[active];
 
@@ -152,14 +145,12 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
 
   const tipLeft = Math.min(Math.max(ax, 72), width - 72);
   const tipBelow = ay < 72;
-  const tipGap = bars ? 10 : 18;
   const uses = days[active].uses;
 
   const move = (e: React.PointerEvent<SVGSVGElement>) => {
     if (n === 1) return setHover(0);
     const r = e.currentTarget.getBoundingClientRect();
-    const px = e.clientX - r.left - L;
-    const i = bars ? Math.floor(px / slot) : Math.round((px / plotW) * (n - 1));
+    const i = Math.round(((e.clientX - r.left - L) / plotW) * (n - 1));
     setHover(Math.max(0, Math.min(n - 1, i)));
   };
 
@@ -275,70 +266,49 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
             </g>
           ))}
 
-          {/* data (re-keyed so the animation replays when the range changes) */}
+          {/* data (re-keyed so the draw-in replays when the range changes) */}
           <g key={String(range)}>
-            {bars ? (
-              days.map((d, i) => {
-                const bh = Math.max(base - y(d.uses), d.uses > 0 ? 2 : 0);
-                return (
-                  <rect
-                    key={d.date}
-                    className="ug-bar"
-                    x={x(i) - bw / 2}
-                    y={base - bh}
-                    width={bw}
-                    height={bh}
-                    rx={Math.min(4, bw / 2)}
-                    fill={ACCENT}
-                    opacity={i === active ? 1 : 0.4}
-                    style={{ animationDelay: `${i * 25}ms` }}
-                  />
-                );
-              })
-            ) : (
-              <>
-                {n > 1 && (
-                  <path
-                    className="ug-area"
-                    d={`${curve} L${pts[n - 1][0].toFixed(1)} ${base} L${pts[0][0].toFixed(1)} ${base} Z`}
-                    fill={`url(#${uid}-fill)`}
-                  />
-                )}
-                {n > 1 && (
-                  <path
-                    className="ug-line"
-                    d={curve}
-                    pathLength={1}
-                    fill="none"
-                    stroke={ACCENT}
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                )}
-              </>
+            {n > 1 && (
+              <path
+                className="ug-area"
+                d={`${curve} L${pts[n - 1][0].toFixed(1)} ${base} L${pts[0][0].toFixed(1)} ${base} Z`}
+                fill={`url(#${uid}-fill)`}
+              />
             )}
 
             {/* average */}
             <line
               x1={L} x2={width - R} y1={y(average)} y2={y(average)}
-              stroke="rgba(255,255,255,0.22)" strokeDasharray="4 5"
+              stroke="rgba(255,255,255,0.2)" strokeDasharray="4 5"
             />
             {y(average) > T + 12 && (
               <text x={width - R} y={y(average) - 7} textAnchor="end" fill={MUTED} fontSize="10.5">
                 avg {nf(average, { maximumFractionDigits: 1 })}
               </text>
             )}
+
+            {n > 1 && (
+              <path
+                className="ug-line"
+                d={curve}
+                pathLength={1}
+                fill="none"
+                stroke={ACCENT}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+
+            {n <= 14 && pts.map(([px, py], i) =>
+              i === active ? null : <circle key={i} cx={px} cy={py} r="2.5" fill={ACCENT} opacity=".85" />,
+            )}
           </g>
 
-          {/* active point (line mode only, bars highlight themselves) */}
-          {!bars && (
-            <>
-              <line x1={ax} x2={ax} y1={T} y2={base} stroke="rgba(255,255,255,0.16)" strokeDasharray="3 4" />
-              <circle cx={ax} cy={ay} r="9" fill={ACCENT} opacity=".15" />
-              <circle cx={ax} cy={ay} r="4.5" fill={ACCENT} stroke={SURFACE} strokeWidth="2" />
-            </>
-          )}
+          {/* active point */}
+          <line x1={ax} x2={ax} y1={T} y2={base} stroke="rgba(255,255,255,0.16)" strokeDasharray="3 4" />
+          <circle cx={ax} cy={ay} r="9" fill={ACCENT} opacity=".15" />
+          <circle cx={ax} cy={ay} r="4.5" fill={ACCENT} stroke={SURFACE} strokeWidth="2" />
 
           {/* x labels */}
           {days.map((d, i) =>
@@ -356,7 +326,7 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
         <div
           style={{
             position: "absolute", pointerEvents: "none", whiteSpace: "nowrap",
-            left: tipLeft, top: tipBelow ? ay + tipGap : ay - tipGap,
+            left: tipLeft, top: tipBelow ? ay + 18 : ay - 18,
             transform: tipBelow ? "translate(-50%, 0)" : "translate(-50%, -100%)",
             background: "#17171b",
             border: `1px solid ${LINE}`, borderRadius: 8,
