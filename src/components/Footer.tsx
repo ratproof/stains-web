@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { BOT_NAME, SUPPORT_URL } from "@/config";
 
-const HEARTH = "https://stains.bot/hearth.webp";
+const HEARTH = "/hearth.webp"; // file lives in public/hearth.webp
 
 const link = "text-sm text-white/60 transition-colors hover:text-white";
 
@@ -39,7 +39,6 @@ export default function Footer() {
           alt=""
           aria-hidden="true"
           draggable={false}
-          loading="lazy"
           className="pointer-events-none absolute inset-x-0 bottom-0 z-0 block w-full select-none"
         />
 
