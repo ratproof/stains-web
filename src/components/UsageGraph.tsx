@@ -11,8 +11,9 @@ const RANGES: Range[] = [3, 7, 14, 30, "all"];
 const ACCENT = "#538CE5";
 const MUTED = "#8b8b94";
 const TEXT = "#f4f4f5";
-const SURFACE = "#0e0e11";
+const SURFACE = "#101012";
 const GRID = "rgba(255,255,255,0.06)";
+const LINE = "rgba(255,255,255,0.08)";
 const UP = "#4ade80";
 const DOWN = "#f87171";
 const L = 44, R = 14, T = 20, B = 30;
@@ -56,13 +57,30 @@ const nf = (v: number, o?: Intl.NumberFormatOptions) => v.toLocaleString("en-US"
 const CSS = `
 .ug-line{stroke-dasharray:1 1;stroke-dashoffset:1;animation:ug-draw .9s cubic-bezier(.4,0,.2,1) forwards}
 .ug-area{animation:ug-fade .8s ease-out both}
-.ug-chart{outline:none;border-radius:12px}
+.ug-chart{outline:none;border-radius:8px}
 .ug-chart:focus-visible{outline:2px solid ${ACCENT};outline-offset:6px}
 .ug-btn:hover{color:${TEXT}}
 @keyframes ug-draw{to{stroke-dashoffset:0}}
 @keyframes ug-fade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.ug-line{animation:none;stroke-dashoffset:0}.ug-area{animation:none}}
 `;
+
+function Cell({ label, sub, children }: { label: string; sub?: string; children: React.ReactNode }) {
+  return (
+    <div style={{ background: SURFACE, padding: ".65rem .9rem", flex: "1 1 auto", minWidth: 96 }}>
+      <div style={{ color: MUTED, fontSize: ".7rem", textTransform: "uppercase", letterSpacing: ".05em" }}>{label}</div>
+      <div
+        style={{
+          display: "flex", alignItems: "center", gap: 8, marginTop: 4,
+          fontSize: "1.35rem", fontWeight: 600, lineHeight: 1.1, fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {children}
+      </div>
+      {sub && <div style={{ color: MUTED, fontSize: ".75rem", marginTop: 4 }}>{sub}</div>}
+    </div>
+  );
+}
 
 export default function UsageGraph({ usage }: { usage?: Usage }) {
   const all = usage?.days ?? [];
@@ -97,7 +115,7 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
   const average = Math.round((total / n) * 10) / 10;
   const peak = days.reduce((b, d) => (d.uses > b.uses ? d : b), days[0]);
 
-  // no previous period to compare against on all time, so the pill hides itself
+  // no previous period to compare against on all time, so the badge hides itself
   const prev = !isAll && all.length >= n * 2 ? all.slice(-n * 2, -n).reduce((a, d) => a + d.uses, 0) : 0;
   const delta = prev > 0 ? ((total - prev) / prev) * 100 : null;
 
@@ -148,40 +166,55 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
     else if (e.key === "Escape") setHover(null);
   };
 
+  const up = delta !== null && delta >= 0;
+
   return (
     <div ref={box}>
       <style>{CSS}</style>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-            <b style={{ fontSize: "1.75rem", fontWeight: 600, letterSpacing: "-0.03em", lineHeight: 1.1 }}>
-              {nf(average, { maximumFractionDigits: 1 })}
-              <span style={{ color: MUTED, fontSize: ".9rem", fontWeight: 500, letterSpacing: 0 }}> avg / day</span>
-            </b>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
+        {/* stat strip */}
+        <div
+          style={{
+            display: "flex", flexWrap: "wrap", gap: 1, overflow: "hidden",
+            borderRadius: 8, border: `1px solid ${LINE}`, background: LINE,
+          }}
+        >
+          <Cell label="Avg / day">
+            {nf(average, { maximumFractionDigits: 1 })}
             {delta !== null && (
               <span
                 title={`vs the previous ${n} days`}
                 style={{
-                  color: delta >= 0 ? UP : DOWN, fontSize: ".75rem", fontWeight: 600,
-                  background: delta >= 0 ? "rgba(74,222,128,.12)" : "rgba(248,113,113,.12)",
-                  padding: ".15rem .5rem", borderRadius: 999,
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  color: up ? UP : DOWN, fontSize: ".72rem", fontWeight: 600,
+                  background: up ? "rgba(74,222,128,.12)" : "rgba(248,113,113,.12)",
+                  padding: ".15rem .4rem", borderRadius: 4,
                 }}
               >
-                {delta >= 0 ? "▲" : "▼"} {Math.abs(delta).toFixed(0)}%
+                <svg aria-hidden viewBox="0 0 10 10" width="8" height="8" fill="currentColor">
+                  {up ? <path d="M5 1 9.5 9h-9z" /> : <path d="M5 9 .5 1h9z" />}
+                </svg>
+                {Math.abs(delta).toFixed(0)}%
               </span>
             )}
-          </div>
-          <span style={{ color: MUTED, fontSize: ".82rem", display: "block", marginTop: 4 }}>
-            {nf(total)} commands {isAll ? `all time (${nf(n)} day${n === 1 ? "" : "s"})` : `in ${n} day${n === 1 ? "" : "s"}`} · peak {nf(peak.uses)} on{" "}
-            {fmtDay(peak.date, { month: "short", day: "numeric", ...(longSpan ? { year: "numeric" } : {}) })}
-          </span>
+          </Cell>
+          <Cell label="Total" sub={isAll ? `all time, ${nf(n)} day${n === 1 ? "" : "s"}` : `last ${n} day${n === 1 ? "" : "s"}`}>
+            {nf(total)}
+          </Cell>
+          <Cell
+            label="Peak"
+            sub={fmtDay(peak.date, { month: "short", day: "numeric", ...(longSpan ? { year: "numeric" } : {}) })}
+          >
+            {nf(peak.uses)}
+          </Cell>
         </div>
 
+        {/* range switch */}
         <div
           role="group"
           aria-label="Time range"
-          style={{ display: "inline-flex", gap: 2, padding: 3, borderRadius: 10, background: "rgba(255,255,255,0.04)", border: `1px solid ${GRID}` }}
+          style={{ display: "inline-flex", gap: 2, padding: 3, borderRadius: 8, border: `1px solid ${LINE}` }}
         >
           {RANGES.map((r) => (
             <button
@@ -193,7 +226,7 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
               onClick={() => { setRange(r); setHover(null); }}
               style={{
                 border: 0, cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem", fontWeight: 500,
-                padding: ".3rem .7rem", borderRadius: 8, transition: "background .2s, color .2s",
+                padding: ".3rem .65rem", borderRadius: 5, transition: "background .2s, color .2s",
                 background: r === range ? "rgba(255,255,255,0.1)" : "transparent",
                 color: r === range ? TEXT : MUTED,
               }}
@@ -224,8 +257,8 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
         >
           <defs>
             <linearGradient id={`${uid}-fill`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={ACCENT} stopOpacity=".32" />
-              <stop offset="70%" stopColor={ACCENT} stopOpacity=".05" />
+              <stop offset="0%" stopColor={ACCENT} stopOpacity=".28" />
+              <stop offset="70%" stopColor={ACCENT} stopOpacity=".04" />
               <stop offset="100%" stopColor={ACCENT} stopOpacity="0" />
             </linearGradient>
           </defs>
@@ -237,7 +270,7 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
                 x1={L} x2={width - R} y1={y(i * step)} y2={y(i * step)}
                 stroke={i === 0 ? "rgba(255,255,255,0.12)" : GRID}
               />
-              <text x={L - 10} y={y(i * step) + 4} textAnchor="end" fill={MUTED} fontSize="11">
+              <text x={L - 10} y={y(i * step) + 4} textAnchor="end" fill={MUTED} fontSize="11" style={{ fontVariantNumeric: "tabular-nums" }}>
                 {nf(i * step, { notation: "compact" })}
               </text>
             </g>
@@ -271,22 +304,21 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
                 pathLength={1}
                 fill="none"
                 stroke={ACCENT}
-                strokeWidth="2.5"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                style={{ filter: `drop-shadow(0 0 6px ${ACCENT}66)` }}
               />
             )}
 
             {n <= 14 && pts.map(([px, py], i) =>
-              i === active ? null : <circle key={i} cx={px} cy={py} r="3" fill={ACCENT} opacity=".85" />,
+              i === active ? null : <circle key={i} cx={px} cy={py} r="2.5" fill={ACCENT} opacity=".85" />,
             )}
           </g>
 
           {/* active point */}
           <line x1={ax} x2={ax} y1={T} y2={base} stroke="rgba(255,255,255,0.16)" strokeDasharray="3 4" />
-          <circle cx={ax} cy={ay} r="11" fill={ACCENT} opacity=".18" />
-          <circle cx={ax} cy={ay} r="5" fill={ACCENT} stroke={SURFACE} strokeWidth="2" />
+          <circle cx={ax} cy={ay} r="9" fill={ACCENT} opacity=".15" />
+          <circle cx={ax} cy={ay} r="4.5" fill={ACCENT} stroke={SURFACE} strokeWidth="2" />
 
           {/* x labels */}
           {days.map((d, i) =>
@@ -306,8 +338,8 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
             position: "absolute", pointerEvents: "none", whiteSpace: "nowrap",
             left: tipLeft, top: tipBelow ? ay + 18 : ay - 18,
             transform: tipBelow ? "translate(-50%, 0)" : "translate(-50%, -100%)",
-            background: "rgba(21,21,26,0.92)", backdropFilter: "blur(6px)",
-            border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 10,
+            background: "#17171b",
+            border: `1px solid ${LINE}`, borderRadius: 8,
             padding: ".4rem .7rem", fontSize: ".82rem", lineHeight: 1.35,
             boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
           }}
@@ -320,9 +352,9 @@ export default function UsageGraph({ usage }: { usage?: Usage }) {
                 : { weekday: "long", month: "short", day: "numeric" },
             )}
           </span>
-          <b style={{ fontWeight: 600 }}>{nf(uses)} {uses === 1 ? "command" : "commands"}</b>
+          <b style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{nf(uses)} {uses === 1 ? "command" : "commands"}</b>
         </div>
       </div>
     </div>
   );
-} // i need this to push an update
+}
