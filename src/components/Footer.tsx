@@ -3,9 +3,12 @@ import { BOT_NAME, SUPPORT_URL } from "@/config";
 
 const GLOW = "74, 87, 127"; // #4A577F, rgb of the glow, change to taste
 
+// grain is tinted from GLOW too (feColorMatrix wants 0 to 1 values)
+const [gr, gg, gb] = GLOW.split(",").map((n) => (Number(n) / 255).toFixed(3));
+
 const link = "text-sm text-white/60 transition-colors hover:text-white";
 
-const grain = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 -0.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
+const grain = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 ${gr}  0 0 0 0 ${gg}  0 0 0 0 ${gb}  0 0 0 1.4 -0.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
 
 const DiscordIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
@@ -36,7 +39,7 @@ function Glow() {
         style={{
           position: "absolute",
           inset: 0,
-          background: `radial-gradient(ellipse 60% 100% at 50% 100%, rgba(${GLOW},0.55), rgba(${GLOW},0.16) 45%, transparent 75%)`,
+          background: `radial-gradient(ellipse 60% 100% at 50% 100%, rgba(${GLOW},0.7), rgba(${GLOW},0.2) 45%, transparent 75%)`,
         }}
       />
       <div
@@ -45,7 +48,7 @@ function Glow() {
           inset: 0,
           backgroundImage: grain,
           backgroundSize: "220px 220px",
-          opacity: 0.6,
+          opacity: 0.9,
           WebkitMaskImage: mask,
           maskImage: mask,
         }}
