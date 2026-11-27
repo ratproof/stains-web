@@ -100,7 +100,7 @@ export default function Footer() {
             <div className="grid grid-cols-2 gap-x-12 gap-y-8 sm:grid-cols-3">
               <Column title="Product">
                 <Link className={link} to="/commands">Commands</Link>
-                <Link className={link} to="/embed-builder">Embed Builder</Link>
+                <Link className={link} to="/embeds">Embed Builder</Link>
                 <Link className={link} to="/status">Status</Link>
               </Column>
               <Column title="Resources">
