@@ -3,13 +3,7 @@ import { BOT_NAME, SUPPORT_URL } from "@/config";
 
 const GLOW = "74, 87, 127"; // #4A577F, rgb of the glow, change to taste
 
-// grain is tinted from GLOW too (feColorMatrix wants 0 to 1 values)
-const [gr, gg, gb] = GLOW.split(",").map((n) => (Number(n) / 255).toFixed(3));
-
 const link = "text-sm text-white/60 transition-colors hover:text-white";
-
-// sRGB interpolation is required, the default linearRGB brightens the color
-const grain = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 ${gr}  0 0 0 0 ${gg}  0 0 0 0 ${gb}  0 0 0 1.4 -0.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
 
 const DiscordIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
@@ -29,46 +23,85 @@ function Column({ title, children }: { title: string; children: React.ReactNode 
   );
 }
 
+// one ray per entry: angle off vertical, length, half width
+const RAYS = [
+  { a: -36, l: 150, w: 7 },
+  { a: -27, l: 195, w: 9 },
+  { a: -18, l: 235, w: 11 },
+  { a: -9, l: 215, w: 9 },
+  { a: 0, l: 265, w: 13 },
+  { a: 9, l: 215, w: 9 },
+  { a: 18, l: 235, w: 11 },
+  { a: 27, l: 195, w: 9 },
+  { a: 36, l: 150, w: 7 },
+];
+
+const OX = 500; // burst origin, sits just under the bottom edge
+const OY = 322;
+
 function Glow() {
-  const mask = "radial-gradient(ellipse 45% 90% at 50% 100%, #000 25%, transparent 80%)";
   return (
     <div
       aria-hidden="true"
-      style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "55%", overflow: "hidden", pointerEvents: "none", zIndex: 0 }}
+      style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "85%", overflow: "hidden", pointerEvents: "none", zIndex: 0 }}
     >
+      {/* soft body under the stipple */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: `radial-gradient(ellipse 60% 100% at 50% 100%, rgba(${GLOW},0.7), rgba(${GLOW},0.2) 45%, transparent 75%)`,
+          background: `radial-gradient(ellipse 55% 85% at 50% 100%, rgba(${GLOW},0.3), rgba(${GLOW},0.08) 50%, transparent 75%)`,
         }}
       />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: grain,
-          backgroundSize: "220px 220px",
-          opacity: 0.9,
-          WebkitMaskImage: mask,
-          maskImage: mask,
-        }}
-      />
-      <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "85%", display: "flex", justifyContent: "center", alignItems: "flex-end", gap: 24 }}>
-        {[0, 1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            style={{
-              width: 4,
-              height: `${55 + ((i * 17) % 40)}%`,
-              borderRadius: 4,
-              transform: `rotate(${(i - 2) * 3}deg)`,
-              background: `linear-gradient(to top, rgba(${GLOW},0.6), transparent)`,
-              opacity: 0.5,
-            }}
-          />
-        ))}
-      </div>
+
+      <svg
+        viewBox="0 0 1000 300"
+        preserveAspectRatio="xMidYMax slice"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+      >
+        <defs>
+          {/* dome density: opaque at the bottom center, fades out toward the edge */}
+          <radialGradient id="fg-dome" cx="0.5" cy="1" r="0.55">
+            <stop offset="0" stopColor="#fff" stopOpacity="1" />
+            <stop offset="0.6" stopColor="#fff" stopOpacity="0.8" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          </radialGradient>
+
+          {/* ray density: solid at the base, fades toward the tip */}
+          <linearGradient id="fg-ray" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0" stopColor="#fff" stopOpacity="1" />
+            <stop offset="0.7" stopColor="#fff" stopOpacity="0.7" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          </linearGradient>
+
+          {/* turns the soft shapes into speckle: noise + density, then hard threshold */}
+          <filter id="fg-stipple" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="300" colorInterpolationFilters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="n" />
+            <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0" result="na" />
+            <feComposite in="SourceGraphic" in2="na" operator="arithmetic" k1="0" k2="0.9" k3="1" k4="-0.5" result="sum" />
+            <feComponentTransfer in="sum" result="dots">
+              <feFuncA type="discrete" tableValues="0 1" />
+            </feComponentTransfer>
+            <feFlood floodColor={`rgb(${GLOW})`} result="c" />
+            <feComposite in="c" in2="dots" operator="in" />
+          </filter>
+        </defs>
+
+        <g filter="url(#fg-stipple)">
+          <rect x="0" y="0" width="1000" height="300" fill="url(#fg-dome)" />
+          {RAYS.map((r, i) => (
+            <ellipse
+              key={i}
+              cx={OX}
+              cy={OY - r.l / 2}
+              rx={r.w}
+              ry={r.l / 2}
+              fill="url(#fg-ray)"
+              transform={`rotate(${r.a} ${OX} ${OY})`}
+            />
+          ))}
+        </g>
+      </svg>
     </div>
   );
 }
