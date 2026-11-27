@@ -103,18 +103,11 @@ export default function Status() {
         <Stat label="Uptime" value={fmtUptime(data.uptime)} sub={`${up}/${shards.length} shards up`} />
       </dl>
 
-      {data.usage && (<>
-        <h2 className="mb-3 mt-12 text-xl">Command usage</h2>
-        <div className="rounded-lg border border-line bg-[#101012] p-5">
-          <UsageGraph usage={data.usage} />
-        </div>
-      </>)}
-
       <h2 className="mb-3 mt-12 text-xl">Shards</h2>
       <div className="overflow-hidden rounded-lg border border-line bg-[#101012]">
         <div className="hidden grid-cols-[7rem_1fr_5rem_6rem_6rem] gap-x-4 border-b border-line px-5 py-2.5 text-xs uppercase tracking-wide text-muted sm:grid">
           <span>Shard</span>
-          <span>Load</span>
+          <span>Ping</span>
           <span className="text-right">Latency</span>
           <span className="text-right">Guilds</span>
           <span className="text-right">Users</span>
@@ -123,6 +116,13 @@ export default function Status() {
           {shards.map((s) => <ShardRow key={s.id} s={s} />)}
         </ul>
       </div>
+
+      {data.usage && (<>
+        <h2 className="mb-3 mt-12 text-xl">Command usage</h2>
+        <div className="rounded-lg border border-line bg-[#101012] p-5">
+          <UsageGraph usage={data.usage} />
+        </div>
+      </>)}
     </>);
   }
 
