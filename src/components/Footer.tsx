@@ -23,37 +23,35 @@ function Column({ title, children }: { title: string; children: React.ReactNode 
   );
 }
 
-// one ray per entry: angle off vertical, length, half width
+// one ray per entry: angle off vertical, length, half width at the base
 const RAYS = [
-  { a: -38, l: 85, w: 5 },
-  { a: -28, l: 112, w: 6 },
-  { a: -18, l: 135, w: 7 },
-  { a: -9, l: 125, w: 6 },
-  { a: 0, l: 160, w: 8 },
-  { a: 9, l: 125, w: 6 },
-  { a: 18, l: 135, w: 7 },
-  { a: 28, l: 112, w: 6 },
-  { a: 38, l: 85, w: 5 },
+  { a: -33, l: 150, w: 9 },
+  { a: -22, l: 170, w: 10 },
+  { a: -11, l: 165, w: 8 },
+  { a: 0, l: 182, w: 11 },
+  { a: 12, l: 160, w: 8 },
+  { a: 23, l: 172, w: 10 },
+  { a: 33, l: 148, w: 9 },
 ];
 
-const OX = 500; // burst origin, just under the bottom edge so the ray bases are hidden
-const OY = 306;
+const OX = 500; // fan origin, below the bottom edge so the ray bases are hidden
+const OY = 335;
 
-// gate table: alpha >= 0.05 passes, so dots never appear outside the shapes
+// gate table: alpha >= 0.05 passes, so dots never show up outside the shapes
 const GATE = "0 " + Array(19).fill("1").join(" ");
 
 function Glow() {
   return (
     <div
       aria-hidden="true"
-      style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "85%", overflow: "hidden", pointerEvents: "none", zIndex: 0 }}
+      style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "75%", overflow: "hidden", pointerEvents: "none", zIndex: 0 }}
     >
-      {/* very soft body under the stipple */}
+      {/* faint body so the gaps between dots aren't dead black */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: `radial-gradient(ellipse 55% 60% at 50% 100%, rgba(${GLOW},0.22), rgba(${GLOW},0.06) 55%, transparent 80%)`,
+          background: `radial-gradient(ellipse 28% 40% at 50% 100%, rgba(${GLOW},0.1), transparent 80%)`,
         }}
       />
 
@@ -63,36 +61,36 @@ function Glow() {
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
       >
         <defs>
-          {/* dome density: full at the bottom center, thinning out to nothing at the edge */}
+          {/* dome: wide and shallow (250 x 85), steady in the middle, fades at the rim */}
           <radialGradient
             id="fg-dome"
             gradientUnits="userSpaceOnUse"
-            cx="500"
-            cy="300"
+            cx="0"
+            cy="0"
             r="1"
-            gradientTransform="translate(500 300) scale(540 130) translate(-500 -300)"
+            gradientTransform="translate(500 300) scale(250 85)"
           >
             <stop offset="0" stopColor="#fff" stopOpacity="1" />
-            <stop offset="0.5" stopColor="#fff" stopOpacity="0.55" />
+            <stop offset="0.6" stopColor="#fff" stopOpacity="0.85" />
+            <stop offset="0.85" stopColor="#fff" stopOpacity="0.4" />
             <stop offset="1" stopColor="#fff" stopOpacity="0" />
           </radialGradient>
 
-          {/* ray density: solid at the base, fading toward the tip */}
+          {/* rays: solid at the base, fading toward the tip */}
           <linearGradient id="fg-ray" x1="0" y1="1" x2="0" y2="0">
             <stop offset="0" stopColor="#fff" stopOpacity="1" />
-            <stop offset="0.6" stopColor="#fff" stopOpacity="0.6" />
-            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+            <stop offset="0.65" stopColor="#fff" stopOpacity="0.8" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0.15" />
           </linearGradient>
 
           {/*
-            stipple: dot if 1.5 * density + 5 * noise - 3 >= 0.5
-            high noise gain means density really maps to dot probability
-            (about 85% dots at full density, a few % at the faint edge)
+            stipple: a pixel becomes a dot when 1.5 * density + 5 * noise - 3.5 >= 0.5
+            full density is about half dots, mid density a few dots, rim almost none
           */}
           <filter id="fg-stipple" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="300" colorInterpolationFilters="sRGB">
             <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="n" />
             <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0" result="na" />
-            <feComposite in="SourceGraphic" in2="na" operator="arithmetic" k1="0" k2="1.5" k3="5" k4="-3" result="sum" />
+            <feComposite in="SourceGraphic" in2="na" operator="arithmetic" k1="0" k2="1.5" k3="5" k4="-3.5" result="sum" />
             <feComponentTransfer in="sum" result="dots">
               <feFuncA type="discrete" tableValues="0 1" />
             </feComponentTransfer>
@@ -108,12 +106,9 @@ function Glow() {
         <g filter="url(#fg-stipple)">
           <rect x="0" y="0" width="1000" height="300" fill="url(#fg-dome)" />
           {RAYS.map((r, i) => (
-            <ellipse
+            <polygon
               key={i}
-              cx={OX}
-              cy={OY - r.l / 2}
-              rx={r.w}
-              ry={r.l / 2}
+              points={`${OX - r.w},${OY} ${OX - r.w * 0.5},${OY - r.l} ${OX + r.w * 0.5},${OY - r.l} ${OX + r.w},${OY}`}
               fill="url(#fg-ray)"
               transform={`rotate(${r.a} ${OX} ${OY})`}
             />
